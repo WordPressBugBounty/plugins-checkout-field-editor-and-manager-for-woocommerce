@@ -6,7 +6,7 @@ Donate link:
 Tags: WooCommerce custom checkout fields, WooCommerce Checkout Field Manager,checkout field customizer, checkout form editor, checkout form designer
 Requires at least: 4.0
 Tested up to: 6.7
-Stable tag: 2.2.25
+Stable tag: 2.2.26
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,7 +17,7 @@ WooCommerce checkout field editor and manager helps to manage checkout fields in
 WooCommerce checkout field editor and manager plugin helps to manage the checkout page fields in WooCommerce Store.
 It's drag and drop form builder helps editing checkout fields easier. It can use to add, modify or hide default WooCommerce checkout fields.
 
-[Try the Demo](http://wcfe-free.demo.acowebs.com/wp-admin/admin.php?page=awcfe_admin_ui#/section/billing) | [Documents](https://acowebs.com/guideline/plugin-docs-faqs/wcfem/) | [Pro Version](https://acowebs.com/woocommerce-checkout-field-editor-and-manager/)
+[Try the Demo](https://wcfe-free-demo.acowebs.com/wp-admin/admin.php?page=awcfe_admin_ui#/section/billing) | [Documents](https://acowebs.com/guideline/plugin-docs-faqs/wcfem/) | [Pro Version](https://acowebs.com/woocommerce-checkout-field-editor-and-manager/)
 
 == HOW TO manage WooCommerce Checkout Fields? ==
 
@@ -79,8 +79,8 @@ Here you can manage all the fields available in WooCommerce and also you can add
 
 == DEMO - CHECK THIS OUT IN REAL ==
 
-🔗 [Front end Demo](http://wcfe-free.demo.acowebs.com/checkout/?add-to-cart=32)
-🔗 [Backend Demo](http://wcfe-free.demo.acowebs.com/wp-admin/admin.php?page=awcfe_admin_ui#/section/billing)
+🔗 [Front end Demo](https://wcfe-free-demo.acowebs.com/checkout/?add-to-cart=32)
+🔗 [Backend Demo](https://wcfe-free-demo.acowebs.com/wp-admin/admin.php?page=awcfe_admin_ui#/section/billing)
 
 == PRO FEATURES ==
 
@@ -140,8 +140,8 @@ Here you can manage all the fields available in WooCommerce and also you can add
 
 == PRO DEMO - CHECK THIS OUT IN REAL ==
 
-🔗 [Front end Demo](http://wcfe.demo.acowebs.com/)
-🔗 [Backend Demo](http://wcfe.demo.acowebs.com/wp-admin/admin.php?page=awcfe_admin_ui#/)
+🔗 [Front end Demo](https://wcfe-demo.acowebs.com/)
+🔗 [Backend Demo](https://wcfe-demo.acowebs.com/wp-admin/admin.php?page=awcfe_admin_ui#/)
 
 == Why Acowebs? ==
 Acowebs is responsible for empowering your e-commerce stores with reliable Shopify applications and WooCommerce plugins. We own a team of experts who develop the WordPress plugins and themes to offer a great customer experience. Since we are an award-winning software development company, our team of professionals offers incredible support to improve the User experience.
@@ -196,6 +196,8 @@ Yes, you can duplicate a default section on a single click with pro version of o
 Yes it is possible with pro version of our plugin, but not with free version.
 
 == Changelog ==
+= 2.2.26 =
+* Support for WooCommerce 9.6
 = 2.2.25 =
 * Support for WordPress 6.7
 * Support for WooCommerce 9.4
