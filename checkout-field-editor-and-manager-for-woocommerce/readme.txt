@@ -5,8 +5,8 @@ Contributors: acowebs, acowebssupport, saneshacodez
 Donate link:
 Tags: WooCommerce custom checkout fields, WooCommerce Checkout Field Manager,checkout field customizer, checkout form editor, checkout form designer
 Requires at least: 4.0
-Tested up to: 6.7
-Stable tag: 2.2.26
+Tested up to: 6.8
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,9 @@ Yes, you can duplicate a default section on a single click with pro version of o
 Yes it is possible with pro version of our plugin, but not with free version.
 
 == Changelog ==
+= 2.3.0 =
+* Support for WooCommerce 9.8
+* Support for WordPress 6.8
 = 2.2.26 =
 * Support for WooCommerce 9.6
 = 2.2.25 =
