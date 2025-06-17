@@ -86,17 +86,11 @@ class AWCFE_Fields
                                 if (isset($val[$k])) {
                                     $submitedVal = $val[$k];
 
-                                    if ($k === 'label' && $val['type'] === 'paragraph') {
+                                    if ($k === 'label' && ($val['type'] === 'paragraph' || $val['type'] === 'header')) {
                                         $filteredValue[$k] = wp_kses($submitedVal, $allowed);
                                     } else if ($k === 'options') {
                                         $options = array();
                                         foreach ($submitedVal as $kkey => $option) {
-                                            // array_push($options,
-                                            //     array(
-                                            //         'value' => wp_kses($option['value'], array()),
-                                            //         'label' => wp_kses($option['label'], array()),
-                                            //         'selected' => (isset($option['selected']) && $option['selected'] === true) ? true : false
-                                            //     ));
 
                                           if(  !empty($option['label']) ){
                                             array_push($options,
@@ -134,11 +128,12 @@ class AWCFE_Fields
 
 
                             }
-                            if(isset($filteredValue['custom']) && $filteredValue['custom']){
-                                if(substr( $filteredValue['name'], 0, strlen($secKey)+1 ) !== $secKey.'_'){
-                                    $filteredValue['name'] = $secKey.'_'.$filteredValue['name'];
+                            if (isset($filteredValue['custom']) && $filteredValue['custom']) {
+                                if (isset($filteredValue['name']) && !is_null($filteredValue['name'])) {
+                                    if (substr($filteredValue['name'], 0, strlen($secKey) + 1) !== $secKey . '_') {
+                                        $filteredValue['name'] = $secKey . '_' . $filteredValue['name'];
+                                    }
                                 }
-
                             }
                             $fields[$secKey]['fields'][$row][$colIndex] = $filteredValue;
                         }
@@ -213,7 +208,6 @@ class AWCFE_Fields
 
 
         $customSections = get_option(AWCFE_FIELDS_KEY);
-        // error_log(print_r( $customSections, true));
         if ($customSections && isset($customSections['fields'])) {
             $customSections = $customSections['fields'];
         } else {
@@ -522,69 +516,16 @@ class AWCFE_Fields
         return $newArray;
     }
 
-    /**
-     * @param $customSection
-     * @param $defaultSectionFields
-     */
-//    public function syncWithDefault(&$customSection, $defaultSectionFields)
-//    {
-//
-//        //check if this key is existing in $result
-//        foreach ($defaultSectionFields as $key => $val) {
-//            $hasField = false;
-//
-//            foreach ($customSection['fields'] as $row) {
-//                foreach ($row as $item) {
-//                    if (isset($item['bindingKey']) && $key === $item['bindingKey']) {
-//                        $hasField = true;
-//                        break;
-//                    }
-//                }
-//                if ($hasField) {
-//                    break;
-//                }
-//            }
-//            if (!$hasField) {
-//                $this->appendNewItem($customSection['fields'], $val, $key);
-//
-//            }
-//        }
-//
-//        foreach ($customSection as $row => $col) {
-//            foreach ($col as $k => $val) {
-//                $hasField = false;
-//                if (isset($val['bindingKey']) && !empty($val['bindingKey'])) {
-//                    foreach ($defaultSectionFields as $key => $item) {
-//                        if ($key === $val['bindingKey']) {
-//                            $hasField = true;
-//                            break;
-//                        }
-//                    }
-//                    if (!$hasField) {
-//                        unset($customSection['fields'][$row][$k]);
-//
-//                    }
-//                }
-//            }
-//
-//        }
-//
-//
-//    }
+   
     /**
      * @param $section
      * @return string|void
      */
     public function getSectionDefaultTitle($section)
     {
-//        if ($section === 'billing') {
-//            return __('Billing Fields', 'woocommerce');
-//        } else if ($section === 'shipping') {
-//            return __('Shpping Fields', 'woocommerce');
-//        } else {
-        // return __(ucfirst($section) . ' Fields', 'aco-checkout-field');
+
         return __(ucfirst($section), 'woocommerce') . ' '. __('Fields', 'checkout-field-editor-and-manager-for-woocommerce');
-//        }
+
     }
 
     /**
@@ -680,7 +621,6 @@ class AWCFE_Fields
 
       if ( is_user_logged_in() ) {
       $user_id = get_current_user_id();
-	  // $address_names = get_user_meta( $user_id, 'wc_address_book', true );
 	  $address_names = get_user_meta( $user_id, 'wc_address_book_' . $type, true );
       if( ! empty( $address_names ) ){
         $countries = new WC_Countries();

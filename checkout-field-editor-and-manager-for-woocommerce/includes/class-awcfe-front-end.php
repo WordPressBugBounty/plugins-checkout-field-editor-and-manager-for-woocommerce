@@ -286,7 +286,8 @@ class AWCFE_Front_End
         }
 
         if ($args['type'] === 'header') {
-            $field .= '<' . $args['subtype'] . ' class="' . AWCFE_TOKEN . '_paragraph_field " >' . do_shortcode(nl2br($args['label'])) . '</' . $args['subtype'] . '>';
+            $subtype = isset($args['subtype']) ? $args['subtype'] : 'h3';
+            $field .= '<' . $subtype . ' class="' . AWCFE_TOKEN . '_header_field " >' . do_shortcode(nl2br($args['label'])) . '</' . $subtype . '>';
             if (!empty($field)) {
                 $field_html = '';
 
@@ -312,7 +313,6 @@ class AWCFE_Front_End
             $sort = !empty($args['priority']) ? $args['priority'] : '';
             $req = ($args['required']==true) ? 'validate-required' : '';
             $reqA = ($args['required']==true) ? '<abbr class="required" title="required">*</abbr>' : '';
-            //$maxlength = !empty($args['maxlength']) ? 'maxlength="'.$args['maxlength'].'"' : '';
             $defaultVal = !empty($args['default']) ? $args['default'] : '';
             $defaultVal = apply_filters( 'woocommerce_checkout_get_value', $defaultVal, $args['name'] );
             
@@ -475,8 +475,8 @@ class AWCFE_Front_End
         if($sectionDet){
           foreach ($sectionDet as $key => $value) {
             foreach ($value as $skey => $svalue) {
-              if($field == $svalue['name']){
-                return @$svalue['required'];
+              if(isset($svalue['name']) && $field == $svalue['name']){
+                return isset($svalue['required']) ? $svalue['required'] : null;
               }
             }
           }
