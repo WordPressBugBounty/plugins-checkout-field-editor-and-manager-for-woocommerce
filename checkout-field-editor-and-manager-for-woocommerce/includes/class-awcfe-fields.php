@@ -56,8 +56,6 @@ class AWCFE_Fields
 
     public function saveFields($request_body)
     {
-
-
         $fields = $request_body['fields'];
         $validation = true;
         // now we can actually save the data

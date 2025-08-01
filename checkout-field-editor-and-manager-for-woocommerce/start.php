@@ -1,7 +1,7 @@
 <?php
 /*
  * Plugin Name: Checkout Field Editor and Manager for WooCommerce
- * Version: 2.3.2
+ * Version: 2.3.3
  * Description: WooCommerce checkout field editor and manager helps to manage checkout fields in WooCommerce
  * Author: Acowebs
  * Author URI: http://acowebs.com
@@ -13,7 +13,7 @@
  */
 
 define('AWCFE_TOKEN', 'awcfe');
-define('AWCFE_VERSION', '2.3.2');
+define('AWCFE_VERSION', '2.3.3');
 define('AWCFE_FILE', __FILE__);
 define('AWCFE_EMPTY_LABEL', 'awcfe_empty_label');
 define('AWCFE_ORDER_META_KEY', '_awcfe_order_meta_key');// use _ not show in backend
