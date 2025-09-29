@@ -115,6 +115,9 @@ class AWCFE_Backend
         // deactivation form
         add_action( 'admin_footer', array($this, 'awcfe_deactivation_form') );
 
+        add_action('plugins_loaded', [$this, 'aco_check_checkout_page_type']);
+        add_action('admin_enqueue_scripts', [$this, 'aco_enqueue_admin_script']);
+
     }
     public function before_order_object_save($order, $ata_store){
         // $order
@@ -489,5 +492,57 @@ class AWCFE_Backend
             #awcfe-survey-form-wrap{ display: none;position: absolute;top: 0px;bottom: 0px;left: 0px;right: 0px;z-index: 10000;background: rgb(0 0 0 / 63%); } #awcfe-survey-form{ display:none;margin-top: 15px;position: fixed;text-align: left;width: 40%;max-width: 600px;z-index: 100;top: 50%;left: 50%;transform: translate(-50%, -50%);background: rgba(255,255,255,1);padding: 35px;border-radius: 6px;border: 2px solid #fff;font-size: 14px;line-height: 24px;outline: none;}#awcfe-survey-form p{font-size: 14px;line-height: 24px;padding-bottom:20px;margin: 0;} #awcfe-survey-form .awcfe_button { margin: 25px 5px 10px 0px; height: 42px;border-radius: 6px;background-color: #1eb5ff;border: none;padding: 0 36px;color: #fff;outline: none;cursor: pointer;font-size: 15px;font-weight: 600;letter-spacing: 0.1px;color: #ffffff;margin-left: 0 !important;position: relative;display: inline-block;text-decoration: none;line-height: 42px;} #awcfe-survey-form .awcfe_button#awcfe_deactivate{background: #fff;border: solid 1px rgba(88,115,149,0.5);color: #a3b2c5;}  #awcfe-survey-form .awcfe_button[disabled] { cursor: no-drop; } #awcfe-survey-form .awcfe_button#awcfe_skip{background: #fff;border: none;color: #a3b2c5;padding: 0px 15px;float:right;}#awcfe-survey-form .awcfe-comments{position: relative;}#awcfe-survey-form .awcfe-comments p{ position: absolute; top: -24px; right: 0px; font-size: 14px; padding: 0px; margin: 0px;} #awcfe-survey-form .awcfe-comments p a{text-decoration:none;}#awcfe-survey-form .awcfe-comments textarea{background: #fff;border: solid 1px rgba(88,115,149,0.5);width: 100%;line-height: 30px;resize:none;margin: 10px 0 0 0;} #awcfe-survey-form p#awcfe-error{margin-top: 10px;padding: 0px;font-size: 13px;color: #ea6464;}
         </style>
       <?php }
+
+
+
+    
+public function aco_check_checkout_page_type() {
+    if (!function_exists('wc_get_page_id')) {
+        return;
+    }
+
+    $checkout_page_id = wc_get_page_id('checkout');
+    $blocks = parse_blocks(get_post_field('post_content', $checkout_page_id));
+
+    $is_block_checkout = false;
+    foreach ($blocks as $block) {
+        if ($block['blockName'] === 'woocommerce/checkout') {
+            $is_block_checkout = true;
+            break;
+        }
+    }
+
+    // Save flag to global (or static variable)
+    global $aco_is_block_checkout;
+    $aco_is_block_checkout = $is_block_checkout;
+}
+
+
+public function aco_enqueue_admin_script() {
+    global $aco_is_block_checkout;
+
+    // Default to classic if not set
+    $is_block_checkout = isset($aco_is_block_checkout) && $aco_is_block_checkout;
+
+    $handle = 'aco-admin-script';
+
+    wp_enqueue_script(
+        $handle,
+        plugin_dir_url(__FILE__) . '../block-assets/admin/admin-index.js',
+        array('wp-element', 'wp-i18n', 'wp-components', 'wp-blocks'),
+        filemtime(plugin_dir_path(__FILE__) . '../block-assets/admin/admin-index.js'),
+        true
+    );
+
+    wp_localize_script($handle, 'acoAdminData', array(
+        'checkout_classic' => $is_block_checkout ? 'false' : 'true',
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('aco_nonce'),
+        'pluginUrl' => plugin_dir_url(__FILE__),
+    ));
+
+   
+}
+
 
 }

@@ -6,7 +6,7 @@ Donate link:
 Tags: WooCommerce custom checkout fields, WooCommerce Checkout Field Manager,checkout field customizer, checkout form editor, checkout form designer
 Requires at least: 4.0
 Tested up to: 6.8
-Stable tag: 2.3.3
+Stable tag: 3.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,6 +196,13 @@ Yes, you can duplicate a default section on a single click with pro version of o
 Yes it is possible with pro version of our plugin, but not with free version.
 
 == Changelog ==
+= 3.0.0 =
+* Major update: Added full support for WooCommerce Checkout Block
+* Introduced dynamic custom field rendering in block-based checkout
+* Supports field types: Text, Select, Checkbox.
+* Fields now display and save seamlessly with WooCommerce block flow
+* Improved field ordering via block template parsing
+* WooCommerce 10.2 compatible
 = 2.3.3 =
 * Bug fixes
 = 2.3.2 =
