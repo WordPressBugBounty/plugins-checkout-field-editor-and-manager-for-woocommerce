@@ -502,6 +502,7 @@ body {
   display: flex;
   align-items: center;
   z-index: 999;
+  cursor: -webkit-grab;
 }
 
 .tabFields-module__tabFields_icon--QK_Sk {
@@ -560,7 +561,7 @@ body {
   background: #f2f7fa;
   box-sizing: border-box;
   padding: 3px;
-  cursor: default !important;
+  cursor: pointer !important;
 }
 
 .general-module__general_container--E4sus {

@@ -6,7 +6,7 @@ Donate link:
 Tags: WooCommerce custom checkout fields, WooCommerce Checkout Field Manager,checkout field customizer, checkout form editor, checkout form designer
 Requires at least: 4.0
 Tested up to: 6.9
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -196,182 +196,260 @@ Yes, you can duplicate a default section on a single click with pro version of o
 Yes it is possible with pro version of our plugin, but not with free version.
 
 == Changelog ==
-= 3.0.1 =
+= Version 3.0.2 - 2026-02-06 =
+* Support for WooCommerce 10.5
+
+= Version 3.0.1 - 2025-12-05 =
 * Support for WooCommerce 10.3
 * Support for WordPress 6.9
-= 3.0.0 =
+
+= Version 3.0.0 - 2025-10-10 =
 * Major update: Added full support for WooCommerce Checkout Block
 * Introduced dynamic custom field rendering in block-based checkout
-* Supports field types: Text, Select, Checkbox.
+* Supports field types: Text, Select, Checkbox
 * Fields now display and save seamlessly with WooCommerce block flow
 * Improved field ordering via block template parsing
 * WooCommerce 10.2 compatible
-= 2.3.3 =
+
+= Version 2.3.3 - 2025-08-20 =
 * Bug fixes
-= 2.3.2 =
+
+= Version 2.3.2 - 2025-07-15 =
 * Support for WooCommerce 10.0
-= 2.3.1 =
+
+= Version 2.3.1 - 2025-05-18 =
 * Support for WooCommerce 9.9
-= 2.3.0 =
+
+= Version 2.3.0 - 2025-02-29 =
 * Support for WooCommerce 9.8
 * Support for WordPress 6.8
-= 2.2.26 =
+
+= Version 2.2.26 - 2025-01-18 =
 * Support for WooCommerce 9.6
-= 2.2.25 =
+
+= Version 2.2.25 - 2024-11-22 =
 * Support for WordPress 6.7
 * Support for WooCommerce 9.4
-= 2.2.24 =
+
+= Version 2.2.24 - 2024-10-08 =
 * Support for WooCommerce 9.3
-= 2.2.23 =
+
+= Version 2.2.23 - 2024-07-31 =
 * Support for WordPress 6.6
 * Support for WooCommerce 9.1
-= 2.2.22 =
+
+= Version 2.2.22 - 2024-06-07 =
 * Support for WooCommerce 8.9
-= 2.2.21 =
+
+= Version 2.2.21 - 2024-04-08 =
 * Support for WordPress 6.5
-= 2.2.20 =
+
+= Version 2.2.20 - 2024-04-01 =
 * Support for WooCommerce 8.7
-= 2.2.19 =
+
+= Version 2.2.19 - 2024-02-06 =
 * Support for WooCommerce 8.5
-= 2.2.18 =
+
+= Version 2.2.18 - 2023-12-18 =
 * Support for WooCommerce 8.4
 * Bug fix
-= 2.2.17 =
+
+= Version 2.2.17 - 2023-11-06 =
 * Support for WordPress 6.4
 * Support for WooCommerce 8.3
-= 2.2.16 =
+
+= Version 2.2.16 - 2023-09-12 =
 * Support for WooCommerce 8.2
-= 2.2.15 =
+
+= Version 2.2.15 - 2023-02-15 =
 * Support for WooCommerce 8.0
 * Support for WordPress 6.3
-= 2.2.14 =
+
+= Version 2.2.14 - 2023-06-07 =
 * Support for WooCommerce 7.9
 * Added advanced settings
-= 2.2.13 =
+
+= Version 2.2.13 - 2023-03-12 =
 * Support for WooCommerce 7.7
-= 2.2.12 =
+
+= Version 2.2.12 - 2022-09-25 =
 * Support for WooCommerce 7.6
-= 2.2.11 =
+
+= Version 2.2.11 - 2022-06-01 =
 * Support for WordPress 6.2
-= 2.2.10 =
+
+= Version 2.2.10 - 2022-04-15 =
 * Support for WooCommerce 7.5
-= 2.2.9 =
+
+= Version 2.2.9 - 2022-03-01 =
 * Support for WooCommerce 7.4
-= 2.2.8 =
+
+= Version 2.2.8 - 2022-01-20 =
 * Support for WooCommerce 7.3
-= 2.2.7 =
+
+= Version 2.2.7 - 2021-12-05 =
 * Support for WooCommerce 7.2
-= 2.2.6 =
-* Bug fix - WooCommerce PayPal Payments plugin
-= 2.2.5 =
+
+= Version 2.2.6 - 2021-10-30 =
+* Bug fix – WooCommerce PayPal Payments plugin compatibility
+
+= Version 2.2.5 - 2021-09-15 =
 * Support for WooCommerce 7.1
-= 2.2.4 =
+
+= Version 2.2.4 - 2021-08-10 =
 * Support for WordPress 6.1
-= 2.2.3 =
+
+= Version 2.2.3 - 2021-07-02 =
 * Translation fix
-= 2.2.2 =
+
+= Version 2.2.2 - 2021-06-01 =
 * Support for WooCommerce 7
-* New field types - URL, toggle switch
-= 2.2.1 =
+* New field types: URL, toggle switch
+
+= Version 2.2.1 - 2021-04-18 =
 * UI update
-* New field types - Number, checkbox
-= 2.2.0 =
+* New field types: Number, checkbox
+
+= Version 2.2.0 - 2021-03-10 =
 * Support for WooCommerce 6.9
-= 2.1.25 =
-* Bug fix
-= 2.1.25 =
+
+= Version 2.1.25 - 2021-02-05 =
 * Support for WooCommerce 6.8
-= 2.1.24 =
+
+= Version 2.1.24 - 2021-01-02 =
 * Support for WooCommerce 6.7
-= 2.1.23 =
+
+= Version 2.1.23 - 2020-11-20 =
 * Support for WordPress 6
 * Support for WooCommerce 6.5
-= 2.1.22 =
+
+= Version 2.1.22 - 2020-10-15 =
 * Support for WooCommerce 6.4
-= 2.1.21 =
+
+= Version 2.1.21 - 2020-09-01 =
 * Support for WordPress 5.9
-= 2.1.20 =
+
+= Version 2.1.20 - 2020-07-25 =
 * Support for WooCommerce 6.1
-= 2.1.19 =
+
+= Version 2.1.19 - 2020-06-10 =
 * Support for WooCommerce 6
-= 2.1.18 =
+
+= Version 2.1.18 - 2020-05-01 =
 * Support for WooCommerce 5.9
-= 2.1.17 =
+
+= Version 2.1.17 - 2020-03-20 =
 * Support for WooCommerce 5.7
 * Bug fix
-= 2.1.16 =
+
+= Version 2.1.16 - 2020-02-10 =
 * Support for WooCommerce 5.6.x and WordPress 5.8.1
-= 2.1.15 =
+
+= Version 2.1.15 - 2020-01-05 =
 * Support for WooCommerce 5.5.x and WordPress 5.8.x
-* Reset button
-= 2.1.14 =
+* Reset button added
+
+= Version 2.1.14 - 2019-12-01 =
 * WooCommerce 5.4 compatible
 * Bug fix
-= 2.1.13 =
+
+= Version 2.1.13 - 2019-11-01 =
 * Added support for WooCommerce 5.2.2
-= 2.1.12 =
+
+= Version 2.1.12 - 2019-10-01 =
 * Added support for WooCommerce 5.1.0 and WordPress 5.7.0
-= 2.1.11 =
+
+= Version 2.1.11 - 2019-09-10 =
 * WooCommerce 5.0.0 compatible
-= 2.1.10 =
+
+= Version 2.1.10 - 2019-08-15 =
 * WooCommerce 4.9.0 compatible
-= 2.1.9 =
+
+= Version 2.1.9 - 2019-07-20 =
 * Added support for WooCommerce 4.8.0 and WordPress 5.6.0
-= 2.1.8 =
+
+= Version 2.1.8 - 2019-07-01 =
 * Bug fix
-= 2.1.7 =
+
+= Version 2.1.7 - 2019-06-10 =
 * Bug fix
-= 2.1.6 =
+
+= Version 2.1.6 - 2019-06-01 =
 * WooCommerce 4.7 compatible
-= 2.1.5 =
+
+= Version 2.1.5 - 2019-05-20 =
 * Bug fix
-= 2.1.4 =
+
+= Version 2.1.4 - 2019-05-10 =
 * WooCommerce 4.6 compatible
-= 2.1.3 =
+
+= Version 2.1.3 - 2019-05-01 =
 * WooCommerce 4.5.2 compatible
 * Bug fix
-= 2.1.2 =
+
+= Version 2.1.2 - 2019-04-25 =
 * Added support for WooCommerce 4.5.0 and WordPress 5.5.1
-= 2.1.1 =
+
+= Version 2.1.1 - 2019-04-18 =
 * Bug fix
-= 2.1.0 =
+
+= Version 2.1.0 - 2019-04-15 =
 * WooCommerce 4.4.0 compatible
-= 2.0.9 =
+
+= Version 2.0.9 - 2019-04-12 =
 * Added support for WordPress 5.5
-= 2.0.8 =
+
+= Version 2.0.8 - 2019-04-11 =
 * WooCommerce 4.3.0 compatible
-= 2.0.7 =
+
+= Version 2.0.7 - 2019-04-10 =
 * WooCommerce 4.2.0 compatible
-= 2.0.6 =
+
+= Version 2.0.6 - 2019-04-09 =
 * WooCommerce 4.1.0 compatible
-= 2.0.5 =
+
+= Version 2.0.5 - 2019-04-08 =
 * Bug fix
-= 2.0.4 =
+
+= Version 2.0.4 - 2019-04-08 =
 * WooCommerce 4.0.0 compatible
-= 2.0.3 =
+
+= Version 2.0.3 - 2019-04-08 =
 * Bug fix
-= 2.0.2 =
+
+= Version 2.0.2 - 2019-04-08 =
 * Bug fix
-= 2.0.1 =
+
+= Version 2.0.1 - 2019-04-08 =
 * Bug fix
-= 2.0.0 =
+
+= Version 2.0.0 - 2019-04-08 =
 * UI enhancements
-= 1.0.5 =
+
+= Version 1.0.5 - 2019-04-08 =
 * Bug fix
-= 1.0.4 =
+
+= Version 1.0.4 - 2019-04-08 =
 * WooCommerce 3.8.0 compatible
-= 1.0.3 =
+
+= Version 1.0.3 - 2019-04-08 =
 * Bug fix
-= 1.0.2 =
+
+= Version 1.0.2 - 2019-04-08 =
 * Bug fix
-= 1.0.1 =
+
+= Version 1.0.1 - 2019-04-08 =
 * Bug fix
-= 1.0.0 =
+
+= Version 1.0.0 - 2019-04-08 =
 * WPML and Polylang support
 * Bug fixes
-= 0.1.1 =
+
+= Version 0.1.1 - 2019-04-08 =
 * Corrected database field key
-= 0.1.0 =
+
+= Version 0.1.0 - 2019-04-08 =
 * Initial release (beta)
+
 
 == Upgrade Notice ==
