@@ -6,6 +6,7 @@
   border-radius: 8px;
   max-width: 1200px;
   padding-left: 10px;
+  padding-top: 15px;
 }
 .aco-admin-container h1 {
   font-size: 2rem;
@@ -20,10 +21,26 @@ body {
 .aco-header-container {
   display: flex;
   justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.aco-header-title {
+  flex: 0 0 55%;
+}
+.aco-header-title h3 {
+  margin: 0;
+  font-size: 20px;
 }
 
 .aco-header-button-container {
-  margin-top: 10px;
+  flex: 0 0 43%;
+  margin-right: 2%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
 }
 
 .aco-svg-button {
@@ -44,8 +61,10 @@ body {
 }
 
 .aco-save-changes-button {
-  display: inline-block;
-  line-height: 35px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
   padding: 0px 20px;
   border-radius: 3px;
   color: #fff;
@@ -54,7 +73,6 @@ body {
   font-weight: 700;
   border: none;
   cursor: pointer;
-  position: relative;
   background: #ec6762;
 }
 .aco-save-changes-button:hover {
@@ -104,8 +122,10 @@ body {
 }
 
 .aco-reset-button {
-  display: inline-block;
-  line-height: 33px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
   padding: 0px 20px;
   border-radius: 3px;
   color: #8b92a5;
@@ -115,9 +135,8 @@ body {
   font-weight: 700;
   border: none;
   cursor: pointer;
-  position: relative;
   border: 1px solid #8b92a5;
-  margin: 0px 10px;
+  margin: 0;
 }
 .aco-reset-button:hover {
   background: #0f0f0f;
@@ -206,7 +225,7 @@ body {
   \***************************************************************************************************************************************************************************************/
 .fieldDisplayTable-module__fieldDisplayTable_main_container--ftbFS {
   margin-top: 10px;
-  width: 43%;
+  width: 55%;
   min-height: 500px;
   border: 1px dashed rgba(53, 78, 112, 0.2);
   padding: 10px;
@@ -418,8 +437,8 @@ body {
   \***********************************************************************************************************************************************************************************************/
 .fieldsAndOptionsTable-module__fieldsAndOptionsTable_main_container--Ch3Zl {
   margin-top: 10px;
-  margin-right: 20px;
-  width: 50%;
+  margin-right: 2%;
+  width: 43%;
   min-height: 100%;
   border-bottom: 1px solid rgba(53, 78, 112, 0.1);
   box-sizing: border-box;
