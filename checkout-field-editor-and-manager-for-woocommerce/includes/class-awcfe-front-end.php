@@ -817,44 +817,42 @@ class AWCFE_Front_End
         }
     }
 
-    public function before_order_object_save($arg=false){
-    if ($arg) {
-      $typ = false;
-			if ( OrderUtil::custom_orders_table_usage_is_enabled()  ) {
-				$typ = ('shop_order' === OrderUtil::get_order_type( $arg ));
-			} else {
-				$typ = (get_post_type($arg)==='shop_order');
-			}
-		  
-           if( $typ ){
-           // if(get_post_type($arg)==='shop_order'){
-            $order = wc_get_order( $arg );
-              //$awcf_data = get_post_meta($arg, AWCFE_ORDER_META_KEY, true);
-             $awcf_data = $order->get_meta(AWCFE_ORDER_META_KEY, true);
-             $fieldset = [];
-             if ($awcf_data) {
-                 foreach ($awcf_data as $key => $field) {
-                     $fieldset[$key] = [];
-                     foreach ($field as $skey => $sfield) {
-                         $fieldname = '_'.$sfield['name'];
-                         if( isset( $_POST[ $fieldname ] ) ){
-                           $sfield['value'] = $_POST[ $fieldname ];
-                         }
-                         $fieldset[$key][] = $sfield;
-                     }
-                 }
-             }
-
-             if (!empty($fieldset)) {
-
-               $order->update_meta_data( AWCFE_ORDER_META_KEY, $fieldset );
-               $order->save();
-                // update_post_meta($arg, AWCFE_ORDER_META_KEY, $fieldset);
-             }
-
-
-           }
+    public function before_order_object_save($arg=false) {
+      if ($arg) {
+        $typ = false;
+        if ( OrderUtil::custom_orders_table_usage_is_enabled()  ) {
+          $typ = ('shop_order' === OrderUtil::get_order_type( $arg ));
+        } else {
+          $typ = (get_post_type($arg)==='shop_order');
         }
+        
+            if( $typ ){
+            // if(get_post_type($arg)==='shop_order'){
+              $order = wc_get_order( $arg );
+                //$awcf_data = get_post_meta($arg, AWCFE_ORDER_META_KEY, true);
+              $awcf_data = $order->get_meta(AWCFE_ORDER_META_KEY, true);
+              $fieldset = [];
+              if ($awcf_data) {
+                  foreach ($awcf_data as $key => $field) {
+                      $fieldset[$key] = [];
+                      foreach ($field as $skey => $sfield) {
+                          $fieldname = '_' . $sfield['name'];
+                          if ( isset( $_POST[ $fieldname ] ) ) {
+                              $sfield['value'] = wc_clean( wp_unslash( $_POST[ $fieldname ] ) );
+                          }
+                          $fieldset[$key][] = $sfield;
+                      }
+                  }
+              }
+
+              if (!empty($fieldset)) {
+
+                $order->update_meta_data( AWCFE_ORDER_META_KEY, $fieldset );
+                $order->save();
+                  // update_post_meta($arg, AWCFE_ORDER_META_KEY, $fieldset);
+              }
+            }
+          }
     }
 
     public function awcfe_custom_fields_validation($data, $errors){
