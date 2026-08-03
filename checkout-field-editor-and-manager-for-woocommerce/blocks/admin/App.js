@@ -206,54 +206,56 @@ const handleFields = (e, fieldId, subId = null) => {
     const { active, over } = event;
     if (!over) return;
 
-    // Handle adding new fields or reordering existing fields
-    const [id, location] = active.id.split(':');
-    const fieldType = id.trim();
+    if (active.id && typeof active.id === 'string' && active.id.includes(':')) {
+      // Handle adding new fields
+      const [id, location] = active.id.split(':');
+      const fieldType = id.trim();
 
-    // Find the drop index
-    let dropIndex = allFields.length; // Default to appending
-    if (over.id !== 'field-droppable') {
-      // If dropped on an existing field, use its index
-      dropIndex = allFields.findIndex(item => item.id === over.id);
-      if (dropIndex === -1) dropIndex = allFields.length; // Fallback
-    }
+      // Find the drop index
+      let dropIndex = allFields.length; // Default to appending
+      if (over.id !== 'field-droppable') {
+        // If dropped on an existing field, use its index
+        dropIndex = allFields.findIndex(item => item.id === over.id);
+        if (dropIndex === -1) dropIndex = allFields.length; // Fallback
+      }
 
-    const newField = {
-      id: `${fieldType}-${Date.now()}`,
-      type: fieldType === 'number' ? 'text' : fieldType, // Ensure 'number' type is set correctly
-      fieldType: fieldType,
-      label:
-        fieldType === 'text' ? 'Text Field' :
-          fieldType === 'select' ? 'Select Field' :
-            fieldType === 'number' ? 'Number Field' :
-              'Checkbox Field',
-      placeholder: '',
-      index: dropIndex,
-      required: false,
-      pattern:
-        fieldType === 'number' ? '^[0-9]*$' :
-          null,
-      enable: true,
-      location: location ? location.trim() : '',
-      ...(fieldType === 'select' && { options: defaultLabels }),
-    };
+      const newField = {
+        id: `${fieldType}-${Date.now()}`,
+        type: fieldType === 'number' ? 'text' : fieldType, // Ensure 'number' type is set correctly
+        fieldType: fieldType,
+        label:
+          fieldType === 'text' ? 'Text Field' :
+            fieldType === 'select' ? 'Select Field' :
+              fieldType === 'number' ? 'Number Field' :
+                'Checkbox Field',
+        placeholder: '',
+        index: dropIndex,
+        required: false,
+        pattern:
+          fieldType === 'number' ? '^[0-9]*$' :
+            null,
+        enable: true,
+        location: location ? location.trim() : '',
+        ...(fieldType === 'select' && { options: defaultLabels }),
+      };
 
-    setAllFields(prev => {
-      const updatedFields = [...prev];
-      updatedFields.splice(dropIndex, 0, newField); // Insert at dropIndex
-      // Reassign indices
-      return updatedFields.map((field, i) => ({ ...field, index: i }));
-    });
+      setAllFields(prev => {
+        const updatedFields = [...prev];
+        updatedFields.splice(dropIndex, 0, newField); // Insert at dropIndex
+        // Reassign indices
+        return updatedFields.map((field, i) => ({ ...field, index: i }));
+      });
+    } else {
+      // Handle reordering existing fields
+      if (active.id !== over.id) {
 
-    // Handle reordering existing fields
-    if (active.id !== over.id) {
+        const oldIndex = allFields.findIndex(item => item.id === active.id);
+        const newIndex = allFields.findIndex(item => item.id === over.id);
 
-      const oldIndex = allFields.findIndex(item => item.id === active.id);
-      const newIndex = allFields.findIndex(item => item.id === over.id);
-
-      if (oldIndex !== -1 && newIndex !== -1) {
-        setAllFields(arrayMove(allFields, oldIndex, newIndex));
-        resetIndex();
+        if (oldIndex !== -1 && newIndex !== -1) {
+          setAllFields(arrayMove(allFields, oldIndex, newIndex));
+          resetIndex();
+        }
       }
     }
   }

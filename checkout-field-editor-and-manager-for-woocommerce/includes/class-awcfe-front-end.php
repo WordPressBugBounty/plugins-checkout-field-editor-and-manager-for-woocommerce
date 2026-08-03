@@ -63,8 +63,6 @@ class AWCFE_Front_End
             add_action('woocommerce_order_details_after_order_table', array($this, 'order_details_after_order_table'), 10, 1);
             add_action('woocommerce_email_after_order_table', array($this, 'email_after_order_table'), 10, 1);
 
-            // add_action( 'woocommerce_admin_order_data_after_order_details' , array($this,'fields_display_order_data_custom_in_admin' ),20,1);
-
             add_action('woocommerce_admin_order_data_after_billing_address', array($this, 'fields_display_order_data_billing_in_admin'), 20, 1);
             
             add_filter( 'woocommerce_form_field_checkbox', array($this, 'awcfe_checkout_fields_checkbox_field'), 10, 4 );
@@ -145,21 +143,6 @@ class AWCFE_Front_End
         wp_enqueue_style($this->_token . '-frontend');
     }
 
-    /*
-    public function awcfe_custom_footer_script(){
-      ?>
-      <script>
-      jQuery(window).load(function(){
-        jQuery(".checkout.woocommerce-checkout .form-row").each(function() {
-            if(jQuery(this).is(":hidden")){
-              jQuery(this).find('.woocommerce-input-wrapper input, .woocommerce-input-wrapper select, .woocommerce-input-wrapper textarea, .woocommerce-input-wrapper .input-text ').attr('disabled', true);
-            }
-        });
-      });
-      </script>
-      <?php
-    }
-    */
 
     public function getSectionDefaultTitle($section) {
 
@@ -191,21 +174,31 @@ class AWCFE_Front_End
                     $outString1 .= '<tr class="awcfe-' . $section . '-extra-items" ><td colspan="2" style="border: 1px solid #e5e5e5;" >' . __(ucfirst($sectionName), 'woocommerce') . ' ' . __('Extra Fields', 'checkout-field-editor-and-manager-for-woocommerce') . ' </td></tr>';
                 }
                 uasort($fields, 'wc_checkout_fields_uasort_comparison');
-                $row_template = '<tr class="awcfe-' . $section . '-extra-items" ><th style="border: 1px solid #e5e5e5;">%1$s</th><td style="border: 1px solid #e5e5e5;">%2$s</td></tr>';
+                $row_template = '<tr class="awcfe-' . esc_attr($section) . '-extra-items" ><th style="border: 1px solid #e5e5e5;">%1$s</th><td style="border: 1px solid #e5e5e5;">%2$s</td></tr>';
                 foreach ($fields as $key => $val) {
                     if (isset($val['show_in_email']) && $val['show_in_email'] === true) {
-
-                        if($val['type'] == 'header' || $val['type'] == 'paragraph' ){
-                            $outString .= sprintf($row_template, $val['label'], $val['value']);
-                        }
-                        if (!empty($val['value'])) {
+                        $label_escaped = esc_html($val['label']);
+                        if (in_array($val['type'], ['header', 'paragraph', 'htmlf'])) {
+                            $outString .= sprintf($row_template, $label_escaped, wp_kses_post($val['value']));
+                        } elseif (!empty($val['value'])) {
                             if (is_array($val['value'])) {
-                                $outString .= sprintf($row_template, $val['label'], esc_attr(implode(', ', $val['value'])));
+                                $outString .= sprintf($row_template, $label_escaped, esc_html(implode(', ', $val['value'])));
                             } else {
-                                $outString .= sprintf($row_template, $val['label'], nl2br($val['value']));
+                                if ($val['type'] === 'url') {
+                                    $outString .= sprintf(
+                                        $row_template,
+                                        $label_escaped,
+                                        sprintf(
+                                            '<a href="%s" target="_blank">%s</a>',
+                                            esc_url($val['value']),
+                                            esc_html($val['value'])
+                                        )
+                                    );
+                                } else {
+                                    $outString .= sprintf($row_template, $label_escaped, nl2br(esc_html($val['value'])));
+                                }
                             }
                         }
-                        // echo sprintf($row_template, $val['label'], $val['value']);
                     }
                 }
                 if( $outString ){ echo $outString1.''.$outString; }
@@ -216,59 +209,97 @@ class AWCFE_Front_End
 
     }
 
-    public function order_details_after_order_table($order)
-    {
-        $order_id = $order->get_id();
-        // $awcf_data = get_post_meta($order_id, AWCFE_ORDER_META_KEY, true);
-        $awcf_data = $order->get_meta(AWCFE_ORDER_META_KEY, true);
-        if( is_array($awcf_data) ){
-          unset($awcf_data['account']);
-          
-        }
+    public function order_details_after_order_table( $order ) {
 
-        if ($awcf_data) {
-            echo '<table class="woocommerce-table shop_table order_details has-background awcfe-order-extra-details">';
-            foreach ($awcf_data as $section => $fields) {
+      $order_id  = $order->get_id();
+      $awcf_data = $order->get_meta( AWCFE_ORDER_META_KEY, true );
 
-                $outString = $outString1 ='';
-                $sectionName = $this->getSectionDefaultTitle($section);
+      if ( is_array( $awcf_data ) ) {
+          unset( $awcf_data['account'] );
+      }
 
-                if ($fields) {
-                    $outString1 .= '<tr class="awcfe-' . $section . '-extra-items" ><td colspan="2" >' . __(ucfirst($sectionName), 'woocommerce') . ' ' . __('Extra Fields', 'checkout-field-editor-and-manager-for-woocommerce') . ' </td></tr>';
-                }
-                uasort($fields, 'wc_checkout_fields_uasort_comparison');
-                $row_template = '<tr class="awcfe-' . $section . '-extra-items" ><th>%1$s</th><td>%2$s</td></tr>';
-                foreach ($fields as $key => $val) {
-                    if (isset($val['show_in_order_page']) && $val['show_in_order_page'] === true) {
+      if ( $awcf_data ) {
 
-                        if($val['type'] == 'header' || $val['type'] == 'paragraph' ){
-                            $outString .= sprintf($row_template, $val['label'], $val['value']);
-                        }
-                        if (!empty($val['value'])) {
-                            if (is_array($val['value'])) {
-                                $outString .= sprintf($row_template, $val['label'], esc_attr(implode(', ', $val['value'])));
-                            } else {
-								if ($val['type'] == 'url' ) {
-									$outString .= sprintf($row_template, $val['label'], '<a href="' . $val['value'] . '" target="_blank">' . $val['value'] . '</a>' );
-								} 
-                
-                else {
-									$outString .= sprintf($row_template, $val['label'], nl2br($val['value']));
-								}
-                            }
-                        }
-                        // echo sprintf($row_template, $val['label'], $val['value']);
-                    }
-                }
-                if( $outString ){ echo $outString1.''.$outString; }
+          echo '<table class="woocommerce-table shop_table order_details has-background awcfe-order-extra-details">';
 
+          foreach ( $awcf_data as $section => $fields ) {
 
-            }
-            echo '</table>';
-        }
+              $outString  = '';
+              $outString1 = '';
 
+              $sectionName = $this->getSectionDefaultTitle( $section );
 
-    }
+              if ( $fields ) {
+                  $outString1 .= '<tr class="awcfe-' . esc_attr( $section ) . '-extra-items"><td colspan="2">' .
+                      esc_html( ucfirst( $sectionName ) ) . ' ' .
+                      esc_html__( 'Extra Fields', 'checkout-field-editor-and-manager-for-woocommerce' ) .
+                      '</td></tr>';
+              }
+
+              uasort( $fields, 'wc_checkout_fields_uasort_comparison' );
+
+              $row_template = '<tr class="awcfe-' . esc_attr( $section ) . '-extra-items"><th>%1$s</th><td>%2$s</td></tr>';
+
+              foreach ( $fields as $key => $val ) {
+
+                  if ( isset( $val['show_in_order_page'] ) && true === $val['show_in_order_page'] ) {
+
+                      // CHANGED
+                      if ( in_array( $val['type'], [ 'header', 'paragraph', 'htmlf' ] ) ) {
+
+                          $outString .= sprintf(
+                              $row_template,
+                              esc_html( $val['label'] ),
+                              wp_kses_post( $val['value'] )
+                          );
+                      } elseif ( ! empty( $val['value'] ) ) {
+
+                          if ( is_array( $val['value'] ) ) {
+
+                              // CHANGED
+                              $outString .= sprintf(
+                                  $row_template,
+                                  esc_html( $val['label'] ),
+                                  esc_html( implode( ', ', $val['value'] ) )
+                              );
+
+                          } else {
+
+                              if ( $val['type'] === 'url' ) {
+
+                                  // CHANGED
+                                  $outString .= sprintf(
+                                      $row_template,
+                                      esc_html( $val['label'] ),
+                                      sprintf(
+                                          '<a href="%s" target="_blank">%s</a>',
+                                          esc_url( $val['value'] ),
+                                          esc_html( $val['value'] )
+                                      )
+                                  );
+
+                              } else {
+
+                                  // CHANGED
+                                  $outString .= sprintf(
+                                      $row_template,
+                                      esc_html( $val['label'] ),
+                                      nl2br( esc_html( $val['value'] ) )
+                                  );
+                              }
+                          }
+                      }
+                  }
+              }
+
+              if ( $outString ) {
+                  echo $outString1 . $outString;
+              }
+          }
+
+          echo '</table>';
+      }
+  }
 
     public function woocommerce_form_field($field, $key, $args, $value)
     {
@@ -321,9 +352,9 @@ class AWCFE_Front_End
             $step = isset($args['step']) ? 'step="'.$args['step'].'"' : '';
 
             
-              $field = '<p class="form-row ' . AWCFE_TOKEN . '_number_field '.$container_class.' '.$custm_class.'  '.$req.'" id="'.$fieldID.'" data-priority="' . esc_attr($sort) . '" >';
-              $field .= '<label for="'.$args['name'].'" >'.$args['label'].'&nbsp; '.$reqA.' </label>';
-              $field .= '<span class="woocommerce-input-wrapper"><input type="number" class="input-text" name="'.$args['name'].'" value="'.$defaultVal.'" id="'.$args['name'].'" placeholder="'.@$args['placeholder'].'" '. $min .' '. $max .' '. $step .'  autocomplete="off" data-type="numberfield"  />';
+              $field = '<p class="form-row ' . AWCFE_TOKEN . '_number_field '.esc_attr($container_class).' '.esc_attr($custm_class).'  '.esc_attr($req).'" id="'.esc_attr($fieldID).'" data-priority="' . esc_attr($sort) . '" >';
+              $field .= '<label for="'.esc_attr($args['name']).'" >'.esc_html($args['label']).'&nbsp; '.$reqA.' </label>';
+              $field .= '<span class="woocommerce-input-wrapper"><input type="number" class="input-text" name="'.esc_attr($args['name']).'" value="'.esc_attr($defaultVal).'" id="'.esc_attr($args['name']).'" placeholder="'.esc_attr(@$args['placeholder']).'" '. esc_attr($min) .' '. esc_attr($max) .' '. esc_attr($step) .'  autocomplete="off" data-type="numberfield"  />';
               $field .= '</span>';
               $field .= '</p>';
               
@@ -341,11 +372,11 @@ class AWCFE_Front_End
           $is_checked = ( !empty($args['is_checked']) && ($args['is_checked']==true) ) ? ' checked="checked"' : '';
           $defaultVal = !empty($args['default']) ? $args['default'] : '';
 
-          $field .= '<p class="form-row ' . AWCFE_TOKEN . '_toggleSwitch_field '.$container_class.''.$custm_class.''.$req.'" id="'.$fieldID.'" data-priority="' . esc_attr($sort) . '" >';
-          $field .= '<label for="'.$args['name'].'" class="awcfe-form-label" >';
-          $field .= '<span> '.$args['label'].'</span>&nbsp; '.$reqA.' </label>';
-          $field .= '<input type="checkbox" class="input-checkbox" name="'.$args['name'].'" value="'.$defaultVal.'" id="'.$args['name'].'"  '.$is_checked.'  data-type="toggleSwitch"  />';
-          $field .= '<label for="'.$args['name'].'" class="awcfe-formToggle" >'.$args['label'].'</label>';
+          $field .= '<p class="form-row ' . AWCFE_TOKEN . '_toggleSwitch_field '.esc_attr($container_class).''.esc_attr($custm_class).''.esc_attr($req).'" id="'.esc_attr($fieldID).'" data-priority="' . esc_attr($sort) . '" >';
+          $field .= '<label for="'.esc_attr($args['name']).'" class="awcfe-form-label" >';
+          $field .= '<span> '.esc_html($args['label']).'</span>&nbsp; '.$reqA.' </label>';
+          $field .= '<input type="checkbox" class="input-checkbox" name="'.esc_attr($args['name']).'" value="'.esc_attr($defaultVal).'" id="'.esc_attr($args['name']).'"  '.$is_checked.'  data-type="toggleSwitch"  />';
+          $field .= '<label for="'.esc_attr($args['name']).'" class="awcfe-formToggle" >'.esc_html($args['label']).'</label>';
           $field .= '</p>';         
         }
         return $field;
@@ -374,10 +405,10 @@ class AWCFE_Front_End
       $defaultVal = !empty($args['default']) ? $args['default'] : '';
       $argsName = !empty($args['name']) ? $args['name'] : '';
 
-      $field = '<p class="form-row ' . AWCFE_TOKEN . '_check_box_field '.$container_class.''.$custm_class.''.$req.' " id="' . esc_attr( $key ) . '_field" data-priority="' . esc_attr($sort) . '" >';
-      $field .= '<label for="'.$argsName.'" >';
-      $field .= '<input type="checkbox" class="input-checkbox" name="'.$argsName.'" value="'.$defaultVal.'" id="'.$argsName.'"  '.$is_checked.'  data-type="check-box" />';
-      $field .= '<span> '.$args['label'].'</span>&nbsp; '.$reqA.' </label>';
+      $field = '<p class="form-row ' . AWCFE_TOKEN . '_check_box_field '.esc_attr($container_class).''.esc_attr($custm_class).''.esc_attr($req).' " id="' . esc_attr( $key ) . '_field" data-priority="' . esc_attr($sort) . '" >';
+      $field .= '<label for="'.esc_attr($argsName).'" >';
+      $field .= '<input type="checkbox" class="input-checkbox" name="'.esc_attr($argsName).'" value="'.esc_attr($defaultVal).'" id="'.esc_attr($argsName).'"  '.$is_checked.'  data-type="check-box" />';
+      $field .= '<span> '.esc_html($args['label']).'</span>&nbsp; '.$reqA.' </label>';
 
       $field .= '</p>';
 
@@ -640,7 +671,8 @@ class AWCFE_Front_End
                 $result .= '<h3>' . __('Billing extra fields', 'checkout-field-editor-and-manager-for-woocommerce') . '</h3>';
                 foreach ($billing as $billing_det) {
                   if( $billing_det['type'] !== 'header' && $billing_det['type'] !== 'paragraph' ){
-                    $result .= '<p><strong>' . $billing_det['label'] . ':</strong> ' . nl2br($billing_det['value']) . '</p>';
+                    $val_str = is_array($billing_det['value']) ? implode(', ', $billing_det['value']) : $billing_det['value'];
+                    $result .= '<p><strong>' . esc_html( $billing_det['label'] ) . ':</strong> ' . nl2br( esc_html( $val_str ) ) . '</p>';
                   }
                 }
                $result .= '</div>';
@@ -695,7 +727,8 @@ class AWCFE_Front_End
                 foreach ($billing_order as $billing_order_det) {
                   if( $billing_order_det['type'] !== 'header' && $billing_order_det['type'] !== 'paragraph' ){
                     if( $billing_order_det['value'] ){
-                      $result .= '<p><strong>' . $billing_order_det['label'] . ':</strong> ' . nl2br($billing_order_det['value']) . '</p>';
+                      $val_str = is_array($billing_order_det['value']) ? implode(', ', $billing_order_det['value']) : $billing_order_det['value'];
+                      $result .= '<p><strong>' . esc_html( $billing_order_det['label'] ) . ':</strong> ' . nl2br( esc_html( $val_str ) ) . '</p>';
                     }
                   }
                 }
@@ -746,7 +779,8 @@ class AWCFE_Front_End
                 $result .= '<h3>' . __('Shipping extra fields', 'checkout-field-editor-and-manager-for-woocommerce') . '</h3>';
                 foreach ($billing as $billing_det) {
                   if( $billing_det['type'] !== 'header' && $billing_det['type'] !== 'paragraph' ){
-                    $result .= '<p><strong>' . $billing_det['label'] . ':</strong> ' . nl2br($billing_det['value']) . '</p>';
+                    $val_str = is_array($billing_det['value']) ? implode(', ', $billing_det['value']) : $billing_det['value'];
+                    $result .= '<p><strong>' . esc_html( $billing_det['label'] ) . ':</strong> ' . nl2br( esc_html( $val_str ) ) . '</p>';
                   }
                 }
               $result .= '</div>';
@@ -793,27 +827,39 @@ class AWCFE_Front_End
         if ($order === false)
             return false;
 
-        // $awcf_data = get_post_meta($object_id, AWCFE_ORDER_META_KEY, true);
         $awcf_data = $order->get_meta(AWCFE_ORDER_META_KEY, true);
         $fieldset = [];
+        $updated = false;
 
         if ($awcf_data) {
             foreach ($awcf_data as $key => $field) {
                 $fieldset[$key] = [];
                 foreach ($field as $skey => $sfield) {
-                    if ($sfield['meta_id'] == $meta_id && $sfield['name'] == $meta_key) {
-                        $sfield['value'] = $_meta_value;
+                    $sfield_name = isset($sfield['name']) ? $sfield['name'] : '';
+                    $clean_meta_key = ltrim($meta_key, '_');
+                    $clean_sfield_name = ltrim($sfield_name, '_');
+
+                    if (
+                        (!empty($sfield['meta_id']) && $sfield['meta_id'] == $meta_id) ||
+                        (!empty($clean_sfield_name) && $clean_sfield_name === $clean_meta_key)
+                    ) {
+                        if ($sfield['type'] === 'textarea') {
+                            $sfield['value'] = sanitize_textarea_field( $_meta_value );
+                        } else {
+                            $sfield['value'] = wc_clean( $_meta_value );
+                        }
+                        $sfield['meta_id'] = $meta_id;
                         $fieldset[$key][] = $sfield;
+                        $updated = true;
                     } else {
                         $fieldset[$key][] = $sfield;
                     }
                 }
             }
         }
-        if (!empty($fieldset)) {
+        if ($updated && !empty($fieldset)) {
           $order->update_meta_data( AWCFE_ORDER_META_KEY, $fieldset );
           $order->save();
-          // update_post_meta($object_id, AWCFE_ORDER_META_KEY, $fieldset);
         }
     }
 

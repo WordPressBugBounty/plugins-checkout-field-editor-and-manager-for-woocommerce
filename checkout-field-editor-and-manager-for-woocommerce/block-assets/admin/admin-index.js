@@ -10754,60 +10754,61 @@ var App = function App() {
     var active = event.active,
       over = event.over;
     if (!over) return;
+    if (active.id && typeof active.id === 'string' && active.id.includes(':')) {
+      // Handle adding new fields
+      var _active$id$split = active.id.split(':'),
+        _active$id$split2 = _slicedToArray(_active$id$split, 2),
+        id = _active$id$split2[0],
+        location = _active$id$split2[1];
+      var fieldType = id.trim();
 
-    // Handle adding new fields or reordering existing fields
-    var _active$id$split = active.id.split(':'),
-      _active$id$split2 = _slicedToArray(_active$id$split, 2),
-      id = _active$id$split2[0],
-      location = _active$id$split2[1];
-    var fieldType = id.trim();
-
-    // Find the drop index
-    var dropIndex = allFields.length; // Default to appending
-    if (over.id !== 'field-droppable') {
-      // If dropped on an existing field, use its index
-      dropIndex = allFields.findIndex(function (item) {
-        return item.id === over.id;
+      // Find the drop index
+      var dropIndex = allFields.length; // Default to appending
+      if (over.id !== 'field-droppable') {
+        // If dropped on an existing field, use its index
+        dropIndex = allFields.findIndex(function (item) {
+          return item.id === over.id;
+        });
+        if (dropIndex === -1) dropIndex = allFields.length; // Fallback
+      }
+      var newField = _objectSpread({
+        id: "".concat(fieldType, "-").concat(Date.now()),
+        type: fieldType === 'number' ? 'text' : fieldType,
+        // Ensure 'number' type is set correctly
+        fieldType: fieldType,
+        label: fieldType === 'text' ? 'Text Field' : fieldType === 'select' ? 'Select Field' : fieldType === 'number' ? 'Number Field' : 'Checkbox Field',
+        placeholder: '',
+        index: dropIndex,
+        required: false,
+        pattern: fieldType === 'number' ? '^[0-9]*$' : null,
+        enable: true,
+        location: location ? location.trim() : ''
+      }, fieldType === 'select' && {
+        options: defaultLabels
       });
-      if (dropIndex === -1) dropIndex = allFields.length; // Fallback
-    }
-    var newField = _objectSpread({
-      id: "".concat(fieldType, "-").concat(Date.now()),
-      type: fieldType === 'number' ? 'text' : fieldType,
-      // Ensure 'number' type is set correctly
-      fieldType: fieldType,
-      label: fieldType === 'text' ? 'Text Field' : fieldType === 'select' ? 'Select Field' : fieldType === 'number' ? 'Number Field' : 'Checkbox Field',
-      placeholder: '',
-      index: dropIndex,
-      required: false,
-      pattern: fieldType === 'number' ? '^[0-9]*$' : null,
-      enable: true,
-      location: location ? location.trim() : ''
-    }, fieldType === 'select' && {
-      options: defaultLabels
-    });
-    setAllFields(function (prev) {
-      var updatedFields = _toConsumableArray(prev);
-      updatedFields.splice(dropIndex, 0, newField); // Insert at dropIndex
-      // Reassign indices
-      return updatedFields.map(function (field, i) {
-        return _objectSpread(_objectSpread({}, field), {}, {
-          index: i
+      setAllFields(function (prev) {
+        var updatedFields = _toConsumableArray(prev);
+        updatedFields.splice(dropIndex, 0, newField); // Insert at dropIndex
+        // Reassign indices
+        return updatedFields.map(function (field, i) {
+          return _objectSpread(_objectSpread({}, field), {}, {
+            index: i
+          });
         });
       });
-    });
-
-    // Handle reordering existing fields
-    if (active.id !== over.id) {
-      var oldIndex = allFields.findIndex(function (item) {
-        return item.id === active.id;
-      });
-      var newIndex = allFields.findIndex(function (item) {
-        return item.id === over.id;
-      });
-      if (oldIndex !== -1 && newIndex !== -1) {
-        setAllFields((0,_dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_10__.arrayMove)(allFields, oldIndex, newIndex));
-        resetIndex();
+    } else {
+      // Handle reordering existing fields
+      if (active.id !== over.id) {
+        var oldIndex = allFields.findIndex(function (item) {
+          return item.id === active.id;
+        });
+        var newIndex = allFields.findIndex(function (item) {
+          return item.id === over.id;
+        });
+        if (oldIndex !== -1 && newIndex !== -1) {
+          setAllFields((0,_dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_10__.arrayMove)(allFields, oldIndex, newIndex));
+          resetIndex();
+        }
       }
     }
   }

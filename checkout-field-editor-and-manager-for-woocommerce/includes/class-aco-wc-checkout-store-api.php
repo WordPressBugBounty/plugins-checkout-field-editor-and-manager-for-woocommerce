@@ -65,7 +65,24 @@ class ACO_WC_Checkout_Store_API {
     }
 
     public static function get_settings() {
-        return get_option('aco_wc_checkout_fields', []);
+        $fields = get_option('aco_wc_checkout_fields', []);
+        if (is_array($fields)) {
+            $allowed_types = ['text', 'select', 'checkbox'];
+            $cleaned = [];
+            $changed = false;
+            foreach ($fields as $field) {
+                if (isset($field['type']) && !in_array($field['type'], $allowed_types) && empty($field['is_default'])) {
+                    $changed = true;
+                    continue; // Skip ghost field
+                }
+                $cleaned[] = $field;
+            }
+            if ($changed) {
+                update_option('aco_wc_checkout_fields', $cleaned);
+            }
+            return $cleaned;
+        }
+        return $fields;
     }
 
     public static function save_settings(WP_REST_Request $request) {

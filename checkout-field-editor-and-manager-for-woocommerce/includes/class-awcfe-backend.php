@@ -518,13 +518,17 @@ public function aco_check_checkout_page_type() {
 }
 
 
-public function aco_enqueue_admin_script() {
+public function aco_enqueue_admin_script($hook) {
+    if ($hook !== 'toplevel_page_aco-wc-checkout-block') {
+        return;
+    }
+
     global $aco_is_block_checkout;
 
     // Default to classic if not set
     $is_block_checkout = isset($aco_is_block_checkout) && $aco_is_block_checkout;
 
-    $handle = 'aco-admin-script';
+    $handle = 'aco-wc-checkout-admin';
 
     wp_enqueue_script(
         $handle,

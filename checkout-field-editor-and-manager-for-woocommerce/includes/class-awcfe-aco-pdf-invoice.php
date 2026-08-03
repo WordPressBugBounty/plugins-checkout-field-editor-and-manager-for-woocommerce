@@ -118,30 +118,33 @@ class AWCFE_Aco_Pdf_invoice
 
 								if ($val['type'] == 'file' ) {
 										$file_det = json_decode($val['value'], true);
-										if ($file_det["url"]) {
+										if ($file_det && isset($file_det["url"])) {
+												$file_url = esc_url($file_det["url"]);
+												$file_name = esc_html($file_det["filename"]);
 												if ($file_det["type"] == "image/jpg" || $file_det["type"] == "image/png" || $file_det["type"] == "image/gif" || $file_det["type"] == "image/jpeg") {
-														$file_cnt = '<a href="' . $file_det["url"] . '" class="awcfe-file-items" target="_blank"><img src="' . $file_det["url"] . '" alt="' . $file_det["filename"] . '" style="max-height: 60px;" > <span>' . $file_det["filename"] . '</span></a>';
+														$file_cnt = '<a href="' . $file_url . '" class="awcfe-file-items" target="_blank"><img src="' . $file_url . '" alt="' . esc_attr($file_name) . '" style="max-height: 60px;" > <span>' . $file_name . '</span></a>';
 												} else {
-														$file_cnt = '<a href="' . $file_det["url"] . '" class="awcfe-file-items" target="_blank"><img src="' . plugin_dir_url(__DIR__) . 'assets/images/text.png" alt="' . $file_det["filename"] . '" style="max-height: 60px;" > <span>' . $file_det["filename"] . '</span></a>';
+														$file_cnt = '<a href="' . $file_url . '" class="awcfe-file-items" target="_blank"><img src="' . plugin_dir_url(__DIR__) . 'assets/images/text.png" alt="' . esc_attr($file_name) . '" style="max-height: 60px;" > <span>' . $file_name . '</span></a>';
 												}
 												//$outString .= $val['label'], $file_cnt;
 												$outString .= '<br/>'.$file_cnt;
 										}
 								} else {
-										if ($val['type'] == 'header' || $val['type'] == 'paragraph' ||$val['type'] == 'htmlf') {
-												$outString .= '<br/>'.$val['value'];
-										}
-										if (!empty($val['value'])) {
+										if ($val['type'] == 'header' || $val['type'] == 'paragraph' || $val['type'] == 'htmlf') {
+												$outString .= '<br/>'.wp_kses_post($val['value']);
+										} elseif (!empty($val['value'])) {
 												if (is_array($val['value'])) {
-														$outString .= '<br/>'.esc_attr(implode(', ', $val['value']));
+														$outString .= '<br/>'.esc_html(implode(', ', $val['value']));
 												} else {
-														$outString .= '<br/>'.$val['value'];
+														if ($val['type'] === 'url') {
+																$outString .= '<br/><a href="' . esc_url($val['value']) . '" target="_blank">' . esc_html($val['value']) . '</a>';
+														} else {
+																$outString .= '<br/>'.nl2br(esc_html($val['value']));
+														}
 												}
 										}
 								}
-
 					}
-
 				}
 
 				if( $outString ){ return $outString; }
@@ -149,7 +152,6 @@ class AWCFE_Aco_Pdf_invoice
 			}
 
 		}
-
 
 			function awcfe_aco_ps_billing( $custom_fields, $order_id ) {
 
