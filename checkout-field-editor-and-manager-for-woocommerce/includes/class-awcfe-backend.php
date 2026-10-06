@@ -109,7 +109,6 @@ class AWCFE_Backend
         add_action('init', array($this, 'awcfe_init'));
         add_action('admin_notices', array($this, 'awcfe_admin_notices'));
         add_action('admin_head', array($this, 'awcfe_notification_scripting'));
-        add_action('wp_ajax_nopriv_awcfe_rating', array($this, 'awcfe_rating') );
         add_action('wp_ajax_awcfe_rating', array($this, 'awcfe_rating') );
 
         // deactivation form
@@ -357,6 +356,10 @@ class AWCFE_Backend
 
 	  public function awcfe_admin_notices(){
 
+			if ( ! current_user_can( 'manage_woocommerce' ) ) {
+				return;
+			}
+
 			$screen = get_current_screen();
 			if ($screen->id === 'dashboard' || $screen->id === 'woocommerce_page_awcfe_admin_ui'){
         if(!isset($_COOKIE['awcfeShowRating'])){
@@ -405,7 +408,11 @@ class AWCFE_Backend
         jQuery.ajax({
           type: "POST",
           url: "<?php echo admin_url('admin-ajax.php'); ?>",
-          data: {item:item, 'action': 'awcfe_rating',},
+          data: {
+            item: item,
+            action: 'awcfe_rating',
+            _ajax_nonce: '<?php echo esc_js( wp_create_nonce( 'awcfe_rating' ) ); ?>'
+          },
           success: function(result){}
         });
         //if( item == 'later' || item == 'already' ){
@@ -421,19 +428,25 @@ class AWCFE_Backend
 		}
 	}
 
-  function awcfe_rating(){
+  public function awcfe_rating(){
 
-    if( isset($_POST['item']) ){
-      $item = $_POST['item'];
-      if( $item == 'deserve' ){
-        update_option('awcfe_rate_us', 'yes');
-      } else if( $item == 'later' ){
-        setcookie('awcfeShowRating','yes', time() + 86400);
-      } else if( $item == 'already' ){
-        update_option('awcfe_rate_us', 'yes');
+    check_ajax_referer( 'awcfe_rating' );
+
+    if ( ! current_user_can( 'manage_woocommerce' ) ) {
+      wp_send_json_error( null, 403 );
+    }
+
+    if ( isset( $_POST['item'] ) ) {
+      $item = sanitize_key( wp_unslash( $_POST['item'] ) );
+
+      if ( $item === 'deserve' || $item === 'already' ) {
+        update_option( 'awcfe_rate_us', 'yes' );
+      } elseif ( $item === 'later' ) {
+        setcookie( 'awcfeShowRating', 'yes', time() + DAY_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
       }
     }
-    die(0);
+
+    wp_send_json_success();
 
   }
 

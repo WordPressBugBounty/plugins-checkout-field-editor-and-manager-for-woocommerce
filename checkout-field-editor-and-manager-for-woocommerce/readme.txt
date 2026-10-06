@@ -6,7 +6,7 @@ Donate link:
 Tags: WooCommerce custom checkout fields, WooCommerce Checkout Field Manager,checkout field customizer, checkout form editor, checkout form designer
 Requires at least: 4.0
 Tested up to: 7.1
-Stable tag: 3.0.7
+Stable tag: 3.0.8
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -197,6 +197,9 @@ Yes, you can duplicate a default section on a single click with pro version of o
 Yes it is possible with pro version of our plugin, but not with free version.
 
 == Changelog ==
+
+= Version 3.0.8 - 2026-10-06 =
+* Bug fixes
 
 = Version 3.0.7 - 2026-09-09 =
 * Support for WooCommerce 11.1
