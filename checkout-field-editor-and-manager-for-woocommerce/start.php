@@ -1,7 +1,7 @@
 <?php
 /*
  * Plugin Name: Checkout Field Editor and Manager for WooCommerce
- * Version: 3.0.8
+ * Version: 3.0.9
  * Description: WooCommerce checkout field editor and manager helps to manage checkout fields in WooCommerce
  * Author: Acowebs
  * Author URI: http://acowebs.com
@@ -9,17 +9,51 @@
  * Tested up to: 7.1
  * Text Domain: checkout-field-editor-and-manager-for-woocommerce
  * WC requires at least: 4.0.0
- * WC tested up to: 11.1
+ * WC tested up to: 11.2
  */
 
 define('AWCFE_TOKEN', 'awcfe');
-define('AWCFE_VERSION', '3.0.8');
+define('AWCFE_VERSION', '3.0.9');
 define('AWCFE_FILE', __FILE__);
 define('AWCFE_EMPTY_LABEL', 'awcfe_empty_label');
 define('AWCFE_ORDER_META_KEY', '_awcfe_order_meta_key');// use _ not show in backend
 define('AWCFE_FIELDS_KEY', 'awcfe_fields');
 define('AWCFE_PLUGIN_NAME', 'WooCommerce checkout field editor and manager');
 define('AWCFE_STORE_URL', 'https://api.acowebs.com');
+
+// Acowebs Feedback API (deactivation feedback + newsletter opt-in).
+define('AWCFE_FEEDBACK_PLUGIN', 'Checkout Field Editor'); // Canonical name, same in Free and PRO.
+define('AWCFE_EDITION', 'free');
+define('AWCFE_SLUG', 'checkout-field-editor-and-manager-for-woocommerce');
+
+// The shared Acowebs classes need PHP 7.1+; on older PHP nothing is sent or shown.
+if (version_compare(PHP_VERSION, '7.1', '>=')) {
+    require_once plugin_dir_path(__FILE__) . 'includes/class-acowebs-feedback-client.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/class-acowebs-feedback-optin.php';
+
+    // Newsletter notice: WP Dashboard only (no plugin pages listed).
+    Acowebs_Feedback_Optin::register(array(
+        'plugin'     => AWCFE_FEEDBACK_PLUGIN,
+        'edition'    => AWCFE_EDITION,
+        'slug'       => AWCFE_SLUG,
+        'page_slugs' => array(),
+        'prefix'     => 'awcfe',
+        'kit_dir'    => plugin_dir_path(__FILE__) . 'assets/acowebs-ui-kit/',
+        'kit_url'    => plugin_dir_url(__FILE__) . 'assets/acowebs-ui-kit/',
+    ));
+
+    // Align the newsletter card with the other admin notices (same width and spacing). Outer box only:
+    // the wrapper and the kit card each add a 20px right margin, so the card ended short of the others.
+    add_action('admin_enqueue_scripts', function () {
+        if (wp_style_is('acowebs-feedback-ui', 'enqueued')) {
+            wp_add_inline_style(
+                'acowebs-feedback-ui',
+                '.notice.acowebs-optin-notice{margin:5px 0 15px !important}' .
+                '.acowebs-optin-notice > .acofb.acofb-notice{margin:0}'
+            );
+        }
+    }, 20);
+}
 
 require_once(realpath(plugin_dir_path(__FILE__)) . DIRECTORY_SEPARATOR . 'includes/helpers.php');
 

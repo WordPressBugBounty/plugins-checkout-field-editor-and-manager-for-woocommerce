@@ -113,6 +113,7 @@ class AWCFE_Backend
 
         // deactivation form
         add_action( 'admin_footer', array($this, 'awcfe_deactivation_form') );
+        add_action( 'wp_ajax_awcfe_deactivation_feedback', array($this, 'awcfe_deactivation_feedback') );
 
         add_action('plugins_loaded', [$this, 'aco_check_checkout_page_type']);
         add_action('admin_enqueue_scripts', [$this, 'aco_enqueue_admin_script']);
@@ -261,7 +262,13 @@ class AWCFE_Backend
         wp_enqueue_script('jquery');
         // deactivation form js
         if ( $screen->id == 'plugins' ) {
-            wp_enqueue_script($this->_token . '-deactivation-message', esc_url($this->assets_url).'js/message.js', array());
+            wp_enqueue_style('acowebs-feedback-ui', esc_url($this->assets_url) . 'acowebs-ui-kit/acowebs-feedback-ui.css', array(), $this->_version);
+            wp_enqueue_script($this->_token . '-deactivation-message', esc_url($this->assets_url) . 'js/message.js', array(), $this->_version, true);
+            wp_localize_script($this->_token . '-deactivation-message', 'awcfeDeactivation', array(
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce'   => wp_create_nonce('awcfe_deactivation_feedback'),
+                'slug'    => AWCFE_SLUG,
+            ));
         }
 
         if (in_array($screen->id, $this->hook_suffix)) {
@@ -455,56 +462,142 @@ class AWCFE_Backend
 
 
       /**
-       * Deactivation form
-      */
+       * Deactivation feedback popup (Acowebs feedback UI kit), printed on plugins.php only.
+       */
       public function awcfe_deactivation_form()
       {
-        $currentScreen = get_current_screen();
-        $screenID = $currentScreen->id;
-        if ( $screenID == 'plugins' ) {
-            $view = '<div id="awcfe-survey-form-wrap"><div id="awcfe-survey-form">
-            <p>If you have a moment, please let us know why you are deactivating this plugin. All submissions are anonymous and we only use this feedback for improving our plugin.</p>
-            <form method="POST">
-                <input name="Plugin" type="hidden" placeholder="Plugin" value="'.AWCFE_TOKEN.'" required>
-                <input name="Version" type="hidden" placeholder="Version" value="'.AWCFE_VERSION.'" required>
-                <input name="Date" type="hidden" placeholder="Date" value="'.date("m/d/Y").'" required>
-                <input name="Website" type="hidden" placeholder="Website" value="'.get_site_url().'" required>
-                <input name="Title" type="hidden" placeholder="Title" value="'.get_bloginfo( 'name' ).'" required>
-                <input type="radio" id="'.$this->_token.'-temporarily" name="Reason" value="I\'m only deactivating temporarily">
-                <label for="'.$this->_token.'-temporarily">I\'m only deactivating temporarily</label><br>
-                <input type="radio" id="'.$this->_token.'-notneeded" name="Reason" value="I no longer need the plugin">
-                <label for="'.$this->_token.'-notneeded">I no longer need the plugin</label><br>
-                <input type="radio" id="'.$this->_token.'-short" name="Reason" value="I only needed the plugin for a short period">
-                <label for="'.$this->_token.'-short">I only needed the plugin for a short period</label><br>
-                <input type="radio" id="'.$this->_token.'-better" name="Reason" value="I found a better plugin">
-                <label for="'.$this->_token.'-better">I found a better plugin</label><br>
-                <input type="radio" id="'.$this->_token.'-upgrade" name="Reason" value="Upgrading to PRO version">
-                <label for="'.$this->_token.'-upgrade">Upgrading to PRO version</label><br>
-                <input type="radio" id="'.$this->_token.'-requirement" name="Reason" value="Plugin doesn\'t meets my requirement">
-                <label for="'.$this->_token.'-requirement">Plugin doesn\'t meets my requirement</label><br>
-                <input type="radio" id="'.$this->_token.'-broke" name="Reason" value="Plugin broke my site">
-                <label for="'.$this->_token.'-broke">Plugin broke my site</label><br>
-                <input type="radio" id="'.$this->_token.'-stopped" name="Reason" value="Plugin suddenly stopped working">
-                <label for="'.$this->_token.'-stopped">Plugin suddenly stopped working</label><br>
-                <input type="radio" id="'.$this->_token.'-bug" name="Reason" value="I found a bug">
-                <label for="'.$this->_token.'-bug">I found a bug</label><br>
-                <input type="radio" id="'.$this->_token.'-other" name="Reason" value="Other">
-                <label for="'.$this->_token.'-other">Other</label><br>
-                <p id="awcfe-error"></p>
-                <div class="awcfe-comments" style="display:none;">
-                    <textarea type="text" name="Comments" placeholder="Please specify" rows="2"></textarea>
-                    <p>For support queries <a href="https://support.acowebs.com/portal/en/newticket?departmentId=361181000000006907&layoutId=361181000000074011" target="_blank">Submit Ticket</a></p>
+        $screen = get_current_screen();
+        if ( ! $screen || 'plugins' !== $screen->id ) {
+            return;
+        }
+
+        $user        = wp_get_current_user();
+        $plugin_name = __( 'Checkout Field Editor', 'checkout-field-editor-and-manager-for-woocommerce' );
+        $reasons     = array(
+            array( __( "I couldn't get it to work", 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'What went wrong? Any error message helps.', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
+            array( __( 'I found a better plugin', 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'Which plugin did you switch to? What does it do better?', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
+            array( __( "It's missing a feature I need", 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'Which feature were you looking for?', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
+            array( __( 'It broke my site or conflicts with another plugin', 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'What broke, or which plugin does it conflict with?', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
+            array( __( 'I only needed it for a short time', 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'Thanks! Anything we could improve?', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
+            array( __( 'Other', 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'Please tell us a little more.', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
+        );
+        ?>
+        <div class="acofb acofb-overlay" id="awcfe-deactivation" data-acofb="deactivation" hidden>
+          <div class="acofb-modal" role="dialog" aria-modal="true" aria-labelledby="awcfe-dx-title" aria-describedby="awcfe-dx-desc">
+            <form class="acofb-modal-form" novalidate>
+              <div class="acofb-modal-head">
+                <span class="acofb-badge" aria-hidden="true">
+                  <svg viewBox="-8 -1.5 86 86" focusable="false"><path fill="#00DFB1" fill-rule="evenodd" d="M2.85642 22.0022C6.72119 18.0569 13.0525 17.9916 16.9978 21.8564L41.4978 45.8564C43.4052 47.7249 44.4861 50.2785 44.4999 52.9485C44.5136 55.6185 43.4591 58.1831 41.5711 60.0711L21.5711 80.0711C17.6658 83.9763 11.3342 83.9763 7.42894 80.0711C3.52369 76.1658 3.52369 69.8342 7.42894 65.9289L20.2846 53.0733L3.0022 36.1436C-0.943088 32.2788 -1.00836 25.9475 2.85642 22.0022Z"></path><path fill="#00B2FF" fill-rule="evenodd" d="M60.1791 3.124C64.5289 7.36505 64.6171 14.3293 60.376 18.6791L48.4585 30.9022L65.7782 48.2218C70.0739 52.5176 70.0739 59.4824 65.7782 63.7782C61.4824 68.0739 54.5176 68.0739 50.2218 63.7782L25.2218 38.7782C20.9645 34.5208 20.9209 27.6318 25.124 23.3209L44.624 3.3209C48.8651 -1.02889 55.8293 -1.11705 60.1791 3.124Z"></path><path fill="#0A84FF" fill-rule="evenodd" d="M43.5968 57.1543L25.2218 38.7786C22.1371 35.6937 21.2645 31.2271 22.6168 27.3607L41.4978 45.8572C43.4052 47.7257 44.4861 50.2794 44.4999 52.9495C44.5074 54.4143 44.1935 55.8473 43.5968 57.1543Z"></path></svg>
+                </span>
+                <div>
+                  <h2 class="acofb-title" id="awcfe-dx-title"><?php
+                    /* translators: %s: plugin name */
+                    echo esc_html( sprintf( __( 'Quick question before you deactivate %s', 'checkout-field-editor-and-manager-for-woocommerce' ), $plugin_name ) );
+                  ?></h2>
+                  <p class="acofb-sub" id="awcfe-dx-desc"><?php esc_html_e( 'If you have a moment, tell us why. The Acowebs team reads every answer and uses it to improve the plugin.', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></p>
                 </div>
-                <button type="submit" class="awcfe_button" id="awcfe_deactivate">Submit & Deactivate</button>
-                <a href="#" class="awcfe_button" id="awcfe_cancel">Cancel</a>
-                <a href="#" class="awcfe_button" id="awcfe_skip">Skip & Deactivate</a>
-            </form></div></div>';
-            echo $view;
-        } ?>
-        <style>
-            #awcfe-survey-form-wrap{ display: none;position: absolute;top: 0px;bottom: 0px;left: 0px;right: 0px;z-index: 10000;background: rgb(0 0 0 / 63%); } #awcfe-survey-form{ display:none;margin-top: 15px;position: fixed;text-align: left;width: 40%;max-width: 600px;z-index: 100;top: 50%;left: 50%;transform: translate(-50%, -50%);background: rgba(255,255,255,1);padding: 35px;border-radius: 6px;border: 2px solid #fff;font-size: 14px;line-height: 24px;outline: none;}#awcfe-survey-form p{font-size: 14px;line-height: 24px;padding-bottom:20px;margin: 0;} #awcfe-survey-form .awcfe_button { margin: 25px 5px 10px 0px; height: 42px;border-radius: 6px;background-color: #1eb5ff;border: none;padding: 0 36px;color: #fff;outline: none;cursor: pointer;font-size: 15px;font-weight: 600;letter-spacing: 0.1px;color: #ffffff;margin-left: 0 !important;position: relative;display: inline-block;text-decoration: none;line-height: 42px;} #awcfe-survey-form .awcfe_button#awcfe_deactivate{background: #fff;border: solid 1px rgba(88,115,149,0.5);color: #a3b2c5;}  #awcfe-survey-form .awcfe_button[disabled] { cursor: no-drop; } #awcfe-survey-form .awcfe_button#awcfe_skip{background: #fff;border: none;color: #a3b2c5;padding: 0px 15px;float:right;}#awcfe-survey-form .awcfe-comments{position: relative;}#awcfe-survey-form .awcfe-comments p{ position: absolute; top: -24px; right: 0px; font-size: 14px; padding: 0px; margin: 0px;} #awcfe-survey-form .awcfe-comments p a{text-decoration:none;}#awcfe-survey-form .awcfe-comments textarea{background: #fff;border: solid 1px rgba(88,115,149,0.5);width: 100%;line-height: 30px;resize:none;margin: 10px 0 0 0;} #awcfe-survey-form p#awcfe-error{margin-top: 10px;padding: 0px;font-size: 13px;color: #ea6464;}
-        </style>
-      <?php }
+              </div>
+
+              <div class="acofb-modal-body">
+                <fieldset class="acofb-reasons">
+                  <legend class="acofb-sr"><?php
+                    /* translators: %s: plugin name */
+                    echo esc_html( sprintf( __( 'Why are you deactivating %s?', 'checkout-field-editor-and-manager-for-woocommerce' ), $plugin_name ) );
+                  ?></legend>
+                  <?php foreach ( $reasons as $i => $reason ) : $n = $i + 1; ?>
+                  <div class="acofb-reason">
+                    <input class="acofb-radio" type="radio" name="reason" id="awcfe-dx-r<?php echo (int) $n; ?>" value="<?php echo esc_attr( $reason[0] ); ?>" required>
+                    <label class="acofb-reason-card" for="awcfe-dx-r<?php echo (int) $n; ?>"><?php echo esc_html( $reason[0] ); ?></label>
+                    <div class="acofb-details">
+                      <label class="acofb-sr" for="awcfe-dx-d<?php echo (int) $n; ?>"><?php esc_html_e( 'Tell us more (optional)', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></label>
+                      <textarea class="acofb-textarea" id="awcfe-dx-d<?php echo (int) $n; ?>" name="reason_details" rows="3" maxlength="5000" placeholder="<?php echo esc_attr( $reason[1] ); ?>"></textarea>
+                    </div>
+                  </div>
+                  <?php endforeach; ?>
+                </fieldset>
+
+                <div class="acofb-contact">
+                  <input class="acofb-check" type="checkbox" name="consent" id="awcfe-dx-contact" value="1" checked>
+                  <label class="acofb-check-label" for="awcfe-dx-contact"><?php esc_html_e( 'Acowebs can contact me about this feedback', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></label>
+                  <div class="acofb-contact-fields">
+                    <div class="acofb-field">
+                      <label class="acofb-label" for="awcfe-dx-name"><?php esc_html_e( 'Name', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></label>
+                      <input class="acofb-input" type="text" id="awcfe-dx-name" name="name" value="<?php echo esc_attr( $user->display_name ); ?>" maxlength="255" autocomplete="name">
+                    </div>
+                    <div class="acofb-field">
+                      <label class="acofb-label" for="awcfe-dx-email"><?php esc_html_e( 'Email', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></label>
+                      <input class="acofb-input" type="email" id="awcfe-dx-email" name="email" value="<?php echo esc_attr( $user->user_email ); ?>" maxlength="320" autocomplete="email">
+                    </div>
+                  </div>
+                </div>
+
+                <p class="acofb-privacy">
+                  <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V6H4a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 4 15h8a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 12 6h-.5V4.5A3.5 3.5 0 0 0 8 1Zm2 5V4.5a2 2 0 1 0-4 0V6h4Z"></path></svg>
+                  <span><?php esc_html_e( 'We only send this if you click Send: your answer, your site address, name and language, the plugin version and your WordPress, WooCommerce and PHP versions. Your name and email are included only while the box above is ticked.', 'checkout-field-editor-and-manager-for-woocommerce' ); ?> <a class="acofb-link" href="<?php echo esc_url( 'https://acowebs.com/privacy-policy/' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Privacy policy', 'checkout-field-editor-and-manager-for-woocommerce' ); ?><span class="acofb-sr"> <?php esc_html_e( '(opens in a new tab)', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></span></a></span>
+                </p>
+              </div>
+
+              <div class="acofb-modal-foot">
+                <button type="submit" class="acofb-btn acofb-btn--primary acofb-btn--send" data-acofb-action="send"><?php esc_html_e( 'Send & deactivate', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></button>
+                <button type="button" class="acofb-btn acofb-btn--text" data-acofb-action="skip"><?php esc_html_e( 'Skip & deactivate', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></button>
+                <button type="button" class="acofb-btn acofb-btn--text acofb-btn--cancel" data-acofb-action="cancel"><?php esc_html_e( 'Cancel', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <?php
+      }
+
+      /**
+       * AJAX: forward deactivation feedback to the Acowebs Feedback API.
+       */
+      public function awcfe_deactivation_feedback()
+      {
+        check_ajax_referer( 'awcfe_deactivation_feedback', 'nonce' );
+
+        if ( ! current_user_can( 'activate_plugins' ) ) {
+            wp_send_json_error( array( 'message' => 'forbidden' ), 403 );
+        }
+
+        // Shared client is only loaded on PHP 7.1+ (see start.php).
+        if ( ! class_exists( 'Acowebs_Feedback_Client' ) ) {
+            wp_send_json_success();
+        }
+
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
+        $consent = isset( $_POST['consent'] ) && rest_sanitize_boolean( wp_unslash( $_POST['consent'] ) );
+        $args    = array(
+            'plugin'         => AWCFE_FEEDBACK_PLUGIN,
+            'edition'        => AWCFE_EDITION,
+            'plugin_version' => AWCFE_VERSION,
+            'plugin_slug'    => AWCFE_SLUG,
+            'reason'         => isset( $_POST['reason'] ) ? sanitize_text_field( wp_unslash( $_POST['reason'] ) ) : '',
+            'reason_details' => isset( $_POST['reason_details'] ) ? sanitize_textarea_field( wp_unslash( $_POST['reason_details'] ) ) : '',
+            'consent'        => $consent,
+            'name'           => null,
+            'email'          => null,
+        );
+
+        // Name and email only while the contact box is ticked.
+        if ( $consent ) {
+            $args['name']  = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+            $email         = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+            $args['email'] = is_email( $email ) ? $email : '';
+        }
+        // phpcs:enable
+
+        // The client fills missing keys with '' but only strips null, so turn empty strings into null:
+        // the API never receives "" (an empty email would fail validation and lose the feedback).
+        foreach ( $args as $key => $value ) {
+            if ( '' === $value ) {
+                $args[ $key ] = null;
+            }
+        }
+
+        Acowebs_Feedback_Client::send_deactivation( $args );
+
+        wp_send_json_success();
+      }
 
 
 
