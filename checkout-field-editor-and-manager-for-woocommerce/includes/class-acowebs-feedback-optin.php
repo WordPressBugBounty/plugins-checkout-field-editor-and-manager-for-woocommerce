@@ -5,7 +5,7 @@
  * Shows the Acowebs newsletter notice from the Acowebs UI kit (docs/ui-kit/newsletter-notice.html +
  * acowebs-feedback-ui.css): email (pre-filled with the admin's email), optional first name, Subscribe
  * and Not now. Clicking Subscribe, with the privacy line visible, is the consent (consent: true).
- * Submitting subscribes the admin to the `general` list through the Acowebs feedback API. Once the admin subscribes or dismisses the
+ * Submitting subscribes the admin to the list given in register() (default `general`) through the Acowebs feedback API. Once the admin subscribes or dismisses the
  * notice, a user-meta flag stops it from ever showing again, in every Acowebs plugin.
  *
  * WHERE TO PUT THIS FILE
@@ -113,6 +113,7 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 					'display'    => '',
 					'kit_dir'    => '',
 					'kit_url'    => '',
+					'list'       => 'general', // Audience list the subscriber is saved to in the Acowebs panel.
 				)
 			);
 
@@ -124,6 +125,7 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 			$args['page_slugs'] = array_filter( array_map( 'sanitize_key', (array) $args['page_slugs'] ) );
 			$args['prefix']     = sanitize_key( '' !== $args['prefix'] ? $args['prefix'] : $args['slug'] );
 			$args['display']    = '' !== $args['display'] ? $args['display'] : $args['plugin'];
+			$args['list']       = '' !== trim( (string) $args['list'] ) ? trim( (string) $args['list'] ) : 'general';
 
 			self::$plugins[ sanitize_key( $args['slug'] ) ] = $args;
 
@@ -359,7 +361,7 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 
 			$payload = array(
 				'email'     => $email,
-				'list'      => 'general',
+				'list'      => $plugin['list'],
 				'source'    => 'plugin-admin-notice',
 				'plugin'    => $plugin['plugin'],
 				'edition'   => $plugin['edition'],
