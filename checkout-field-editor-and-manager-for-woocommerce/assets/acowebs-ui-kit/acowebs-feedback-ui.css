@@ -811,6 +811,26 @@
   background: var(--acofb-tint);
   border: 1px solid var(--acofb-border);
   border-radius: var(--acofb-radius);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Draws attention to the unticked contact option once a reason is chosen. */
+.acofb .acofb-contact.acofb-contact--nudge {
+  border-color: var(--acofb-primary);
+  background: var(--acofb-panel);
+  animation: acofb-nudge-shake 0.6s ease-in-out 1;
+}
+
+.acofb .acofb-contact.acofb-contact--nudge > .acofb-check {
+  border-color: var(--acofb-primary);
+}
+
+@keyframes acofb-nudge-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
 }
 
 .acofb .acofb-contact > .acofb-check {

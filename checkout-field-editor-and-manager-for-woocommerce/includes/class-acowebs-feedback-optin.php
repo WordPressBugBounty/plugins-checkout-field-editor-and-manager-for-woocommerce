@@ -3,10 +3,10 @@
  * Acowebs feedback client: newsletter opt-in admin notice.
  *
  * Shows the Acowebs newsletter notice from the Acowebs UI kit (docs/ui-kit/newsletter-notice.html +
- * acowebs-feedback-ui.css): email (pre-filled with the admin's email), optional first name, Subscribe
- * and Not now. Clicking Subscribe, with the privacy line visible, is the consent (consent: true).
- * Submitting subscribes the admin to the list given in register() (default `general`) through the Acowebs feedback API. Once the admin subscribes or dismisses the
- * notice, a user-meta flag stops it from ever showing again, in every Acowebs plugin.
+ * acowebs-feedback-ui.css): email (pre-filled with the admin's email), optional first name and phone,
+ * Subscribe and Not now. Clicking Subscribe, with the privacy line visible, is the consent (consent: true).
+ * Submitting subscribes the admin to the list given in register() (default `general`) through the Acowebs feedback API.
+ * Once the admin subscribes or dismisses the notice, a user-meta flag stops it from ever showing again, in every Acowebs plugin.
  *
  * WHERE TO PUT THIS FILE
  * ----------------------
@@ -28,6 +28,19 @@
  * Do NOT rename the class, the AJAX actions, the nonce or the user-meta key: they are shared across
  * plugins on purpose, which is what makes the "never show again" flag work everywhere. The only thing
  * you rename is your own plugin's values passed to register().
+ *
+ * CUSTOM DATA (meta)
+ * ------------------
+ * To attach extra data to the signup (shown as "Meta fields" in the dashboard), use the
+ * `acowebs_feedback_optin_meta` filter. Return a flat array: at most 30 keys (letters, numbers, _ . -),
+ * values that are strings (up to 1000 characters), numbers, booleans or null, 4 KB in total.
+ * An invalid meta makes the API reject the signup, so return only values you control:
+ *
+ *     add_filter( 'acowebs_feedback_optin_meta', function ( $meta, $plugin ) {
+ *         $meta['website_name'] = get_bloginfo( 'name' );
+ *         $meta['active_theme'] = wp_get_theme()->get( 'Name' );
+ *         return $meta;
+ *     }, 10, 2 );
  *
  * REQUIREMENTS: WordPress 5.0+, PHP 7.1+.
  *
@@ -58,8 +71,9 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 
 		/**
 		 * Version of this helper. Bump when you change it.
+		 * 1.3.0: optional phone field, `acowebs_feedback_optin_meta` filter and the per-plugin `list` setting.
 		 */
-		const VERSION = '1.1.0';
+		const VERSION = '1.3.0';
 
 		/**
 		 * User-meta key set when the user subscribed or dismissed the notice.
@@ -98,6 +112,7 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 		 *     @type string   $display    Name shown in the notice text. Defaults to $plugin.
 		 *     @type string   $kit_dir    Absolute path to your copy of the UI kit folder (with trailing slash).
 		 *     @type string   $kit_url    URL of that folder (with trailing slash), for the stylesheet.
+		 *     @type string   $list       Audience list the subscriber is saved to in the Acowebs panel. Defaults to 'general'.
 		 * }
 		 * @return void
 		 */
@@ -113,7 +128,7 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 					'display'    => '',
 					'kit_dir'    => '',
 					'kit_url'    => '',
-					'list'       => 'general', // Audience list the subscriber is saved to in the Acowebs panel.
+					'list'       => 'general',
 				)
 			);
 
@@ -298,6 +313,7 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 					post( 'acowebs_optin_subscribe', {
 						email: form.email.value,
 						name: form.name.value,
+						phone: form.phone ? form.phone.value : '',
 						website_hp: form.website_hp ? form.website_hp.value : ''
 					} ).then( function ( result ) {
 						if ( result && result.success ) {
@@ -348,6 +364,7 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 
 			$email   = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
 			$name    = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+			$phone   = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
 			$honeypot = isset( $_POST['website_hp'] ) ? sanitize_text_field( wp_unslash( $_POST['website_hp'] ) ) : '';
 
 			if ( '' !== $honeypot ) {
@@ -361,7 +378,7 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 
 			$payload = array(
 				'email'     => $email,
-				'list'      => $plugin['list'],
+				'list'      => isset( $plugin['list'] ) && '' !== $plugin['list'] ? $plugin['list'] : 'general',
 				'source'    => 'plugin-admin-notice',
 				'plugin'    => $plugin['plugin'],
 				'edition'   => $plugin['edition'],
@@ -372,6 +389,22 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 			);
 			if ( '' !== $name ) {
 				$payload['name'] = $name;
+			}
+			if ( '' !== $phone ) {
+				// Optional. The API strips spaces, dashes, dots and brackets, and rejects anything that isn't a phone number.
+				$payload['phone'] = $phone;
+			}
+
+			/**
+			 * Filters the optional custom data (meta) sent with the signup. Return a flat array
+			 * (string keys; string, number, bool or null values). Anything else is ignored.
+			 *
+			 * @param array $meta   Custom data. Empty by default.
+			 * @param array $plugin The registered plugin (see register()).
+			 */
+			$meta = apply_filters( 'acowebs_feedback_optin_meta', array(), $plugin );
+			if ( is_array( $meta ) && ! empty( $meta ) ) {
+				$payload['meta'] = (object) $meta; // Always a JSON object, never a JSON array.
 			}
 
 			// Blocking, so we can tell the admin whether it worked. Do not set website_hp.
@@ -388,6 +421,17 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 					'body'        => wp_json_encode( $payload ),
 				)
 			);
+
+			if ( ! is_wp_error( $response ) && 422 === (int) wp_remote_retrieve_response_code( $response ) ) {
+				// Tell the admin when it was the phone number; other 422s get the generic message below.
+				$body   = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+				$issues = ( is_array( $body ) && isset( $body['issues'] ) && is_array( $body['issues'] ) ) ? $body['issues'] : array();
+				foreach ( $issues as $issue ) {
+					if ( is_array( $issue ) && isset( $issue['path'] ) && 'phone' === $issue['path'] ) {
+						wp_send_json_error( array( 'message' => __( 'Please enter a valid phone number, or leave it empty.', 'acowebs-feedback' ) ), 422 );
+					}
+				}
+			}
 
 			if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
 				// Keep the notice so the admin can retry.
@@ -415,3 +459,28 @@ if ( ! class_exists( 'Acowebs_Feedback_Optin' ) ) {
 		}
 	}
 }
+
+/*
+ * =====================================================================================
+ * USAGE (in your main plugin file, after requiring this file)
+ * =====================================================================================
+ *
+ * require_once plugin_dir_path( __FILE__ ) . 'includes/class-acowebs-feedback-optin.php';
+ *
+ * Acowebs_Feedback_Optin::register(
+ *     array(
+ *         'plugin'     => 'Product Table',                    // Canonical name, same in Free and PRO.
+ *         'edition'    => 'free',                             // 'free' or 'pro'.
+ *         'list'       => 'product table for woocommerce',    // Acowebs panel list for this plugin's subscribers.
+ *         'slug'       => 'product-table-for-woocommerce',    // Unique per plugin.
+ *         'page_slugs' => array( 'product-table-settings' ),  // Your admin pages (?page=...).
+ *         'prefix'     => 'wcpt',                             // Your plugin prefix (unique ids).
+ *         'kit_dir'    => plugin_dir_path( __FILE__ ) . 'assets/acowebs-ui-kit/',
+ *         'kit_url'    => plugin_dir_url( __FILE__ ) . 'assets/acowebs-ui-kit/',
+ *     )
+ * );
+ *
+ * The notice shows only to users with `manage_options`, on the dashboard and on the pages listed in
+ * `page_slugs`. To allow someone to re-show the notice (for example while testing), delete the
+ * `acowebs_optin_done` user meta for that user.
+ */

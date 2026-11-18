@@ -479,6 +479,7 @@ class AWCFE_Backend
             array( __( "It's missing a feature I need", 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'Which feature were you looking for?', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
             array( __( 'It broke my site or conflicts with another plugin', 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'What broke, or which plugin does it conflict with?', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
             array( __( 'I only needed it for a short time', 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'Thanks! Anything we could improve?', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
+            array( __( 'Upgrading to PRO version', 'checkout-field-editor-and-manager-for-woocommerce' ), '' ), // No details box for this reason.
             array( __( 'Other', 'checkout-field-editor-and-manager-for-woocommerce' ), __( 'Please tell us a little more.', 'checkout-field-editor-and-manager-for-woocommerce' ) ),
         );
         ?>
@@ -508,17 +509,19 @@ class AWCFE_Backend
                   <div class="acofb-reason">
                     <input class="acofb-radio" type="radio" name="reason" id="awcfe-dx-r<?php echo (int) $n; ?>" value="<?php echo esc_attr( $reason[0] ); ?>" required>
                     <label class="acofb-reason-card" for="awcfe-dx-r<?php echo (int) $n; ?>"><?php echo esc_html( $reason[0] ); ?></label>
+                    <?php if ( '' !== $reason[1] ) : ?>
                     <div class="acofb-details">
                       <label class="acofb-sr" for="awcfe-dx-d<?php echo (int) $n; ?>"><?php esc_html_e( 'Tell us more (optional)', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></label>
                       <textarea class="acofb-textarea" id="awcfe-dx-d<?php echo (int) $n; ?>" name="reason_details" rows="3" maxlength="5000" placeholder="<?php echo esc_attr( $reason[1] ); ?>"></textarea>
                     </div>
+                    <?php endif; ?>
                   </div>
                   <?php endforeach; ?>
                 </fieldset>
 
                 <div class="acofb-contact">
-                  <input class="acofb-check" type="checkbox" name="consent" id="awcfe-dx-contact" value="1" checked>
-                  <label class="acofb-check-label" for="awcfe-dx-contact"><?php esc_html_e( 'Acowebs can contact me about this feedback', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></label>
+                  <input class="acofb-check" type="checkbox" name="consent" id="awcfe-dx-contact" value="1">
+                  <label class="acofb-check-label" for="awcfe-dx-contact"><?php esc_html_e( 'Acowebs can contact me about this feedback & offers', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></label>
                   <div class="acofb-contact-fields">
                     <div class="acofb-field">
                       <label class="acofb-label" for="awcfe-dx-name"><?php esc_html_e( 'Name', 'checkout-field-editor-and-manager-for-woocommerce' ); ?></label>

@@ -1,4 +1,4 @@
-<!-- Acowebs feedback UI kit v1.0.0: newsletter opt-in notice. Printed by Acowebs_Feedback_Optin, which fills {Plugin name}, {prefix}, the admin email, edition, site URL and site name. -->
+<!-- Acowebs feedback UI kit v1.1.0 (optional phone field): newsletter opt-in notice. Printed by Acowebs_Feedback_Optin, which fills {Plugin name}, {prefix}, the admin email, edition, site URL and site name. -->
 <div class="acofb acofb-notice" id="acofb-{prefix}-newsletter" data-acofb="newsletter">
   <button type="button" class="acofb-close" data-acofb-action="dismiss" aria-label="Dismiss">
     <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"></path></svg>
@@ -23,9 +23,16 @@
     </div>
 
     <form class="acofb-panel" aria-labelledby="acofb-{prefix}-nl-title">
-      <div class="acofb-field">
-        <label class="acofb-label" for="acofb-{prefix}-nl-name">First name <span class="acofb-optional">(optional)</span></label>
-        <input class="acofb-input" type="text" id="acofb-{prefix}-nl-name" name="name" maxlength="255" autocomplete="given-name">
+      <!-- First name and phone side by side (inline grid, so it works with any copy of the kit stylesheet). -->
+      <div class="acofb-field-row" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;">
+        <div class="acofb-field">
+          <label class="acofb-label" for="acofb-{prefix}-nl-name">First name <span class="acofb-optional">(optional)</span></label>
+          <input class="acofb-input" type="text" id="acofb-{prefix}-nl-name" name="name" maxlength="255" autocomplete="given-name">
+        </div>
+        <div class="acofb-field">
+          <label class="acofb-label" for="acofb-{prefix}-nl-phone">Phone <span class="acofb-optional">(optional)</span></label>
+          <input class="acofb-input" type="tel" id="acofb-{prefix}-nl-phone" name="phone" maxlength="32" autocomplete="tel" inputmode="tel">
+        </div>
       </div>
       <div class="acofb-field">
         <label class="acofb-label" for="acofb-{prefix}-nl-email">Email</label>

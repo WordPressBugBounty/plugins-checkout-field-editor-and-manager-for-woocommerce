@@ -21,6 +21,7 @@
 		var sendBtn = overlay.querySelector( '[data-acofb-action="send"]' );
 		var consent = form.querySelector( 'input[name="consent"]' );
 		var contactInputs = form.querySelectorAll( 'input[name="name"], input[name="email"]' );
+		var contact = overlay.querySelector( '.acofb-contact' );
 		var deactivateUrl = '';
 		var opener = null;
 		var sent = false;
@@ -41,6 +42,19 @@
 			for ( var i = 0; i < contactInputs.length; i++ ) {
 				contactInputs[ i ].disabled = ! consent.checked;
 			}
+			if ( consent.checked ) {
+				contact.classList.remove( 'acofb-contact--nudge' );
+			}
+		}
+
+		function nudgeContact() {
+			// Highlight the contact option while it is unticked; replay on every new reason.
+			if ( consent.checked ) {
+				return;
+			}
+			contact.classList.remove( 'acofb-contact--nudge' );
+			void contact.offsetWidth;
+			contact.classList.add( 'acofb-contact--nudge' );
 		}
 
 		function focusables() {
@@ -67,6 +81,7 @@
 			document.removeEventListener( 'keydown', onKeydown );
 			form.reset();
 			syncContact();
+			contact.classList.remove( 'acofb-contact--nudge' );
 			if ( opener ) {
 				opener.focus();
 			}
@@ -119,6 +134,12 @@
 		} );
 
 		consent.addEventListener( 'change', syncContact );
+
+		form.addEventListener( 'change', function ( event ) {
+			if ( 'reason' === event.target.name ) {
+				nudgeContact();
+			}
+		} );
 
 		form.addEventListener( 'submit', function ( e ) {
 			e.preventDefault();
